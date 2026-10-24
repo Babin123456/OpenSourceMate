@@ -43,7 +43,7 @@ async function rateLimitMessage(response: Response): Promise<string> {
     return `GitHub rate limit reached, try again at ${time}.`;
   }
 
-  return "GitHub rate limit reached, try again in a few minutes.";
+  return "GitHub API rate limit reached. Please try again in a few minutes.";
 }
 
 export default function Home() {
@@ -84,8 +84,12 @@ export default function Home() {
     setCanRetry(false);
     setLoading(true);
     setError("");
-    setProfile(null);
-    setSkills(null);
+
+    // Only clear previous analysis if analyzing a different username
+    if (cleanUsername.toLowerCase() !== profile?.username?.toLowerCase()) {
+      setProfile(null);
+      setSkills(null);
+    }
 
     try {
       if (!API_URL) {
@@ -98,6 +102,10 @@ export default function Home() {
 
       if (profileResponse.status === 429) {
         throw new Error(await rateLimitMessage(profileResponse));
+      }
+
+      if (profileResponse.status === 502 || profileResponse.status === 503) {
+        throw new Error("GitHub API is temporarily unavailable. Please try again in a few moments.");
       }
 
       if (profileResponse.status === 404) {
@@ -119,6 +127,10 @@ export default function Home() {
         throw new Error(await rateLimitMessage(skillsResponse));
       }
 
+      if (skillsResponse.status === 502 || skillsResponse.status === 503) {
+        throw new Error("GitHub API is temporarily unavailable. Please try again in a few moments.");
+      }
+
       if (!skillsResponse.ok) {
         throw new Error("Unable to analyze this profile's skills. Please try again.");
       }
@@ -130,7 +142,7 @@ export default function Home() {
     } catch (err) {
       setCanRetry(true);
       if (err instanceof TypeError) {
-        setError("Unable to connect. Check your internet connection and try again.");
+        setError("Unable to connect to server. Please check your internet connection and ensure the backend is running.");
       } else if (err instanceof Error) {
         setError(err.message);
       } else {
