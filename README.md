@@ -93,8 +93,9 @@ OpenSourceMate/
 ### Backend
 
 * Python
-* Django
-* Django REST Framework
+* FastAPI
+* Uvicorn
+* Pydantic
 
 ### AI / Data
 
@@ -190,7 +191,19 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
-Then start the backend using the project's configured Django development entry point.
+Start the FastAPI backend server:
+
+```bash
+uvicorn app.main:app --reload --port 8000
+```
+
+The backend API will be available at:
+
+```text
+http://localhost:8000
+```
+
+Interactive OpenAPI documentation (Swagger UI) is accessible at `http://localhost:8000/docs`.
 
 > Backend setup is currently evolving. More detailed setup instructions and environment configuration will be documented as the project develops.
 
