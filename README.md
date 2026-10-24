@@ -315,7 +315,7 @@ Then open a pull request describing:
 * How you tested it
 * Any relevant screenshots or examples
 
-> A detailed `CONTRIBUTING.md` will be added as the contributor workflow matures.
+For detailed guidelines on setup, branch naming, PR conventions, and coding standards, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
