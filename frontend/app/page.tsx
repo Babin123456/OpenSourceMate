@@ -71,6 +71,7 @@ useEffect(() => {
   const [error, setError] = useState("");
   const [lastAnalyzed, setLastAnalyzed] = useState("");
   const [canRetry, setCanRetry] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const analyzeProfile = async (override?: string) => {
     const cleanUsername = (override ?? username).trim().replace(/^@/, "");
@@ -233,7 +234,78 @@ useEffect(() => {
 </button>
           </div>
 
+          {/* Mobile hamburger button */}
+          <div className="flex items-center md:hidden">
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              aria-label="Toggle navigation menu"
+              aria-expanded={mobileMenuOpen}
+              className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 p-2 text-gray-400 transition hover:bg-white/10 hover:text-white focus:outline-none"
+            >
+              {mobileMenuOpen ? (
+                <svg
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                </svg>
+              )}
+            </button>
+          </div>
+
         </div>
+
+        {/* Mobile dropdown menu */}
+        {mobileMenuOpen && (
+          <div className="border-t border-white/5 bg-[#05070d]/95 px-6 py-4 shadow-2xl backdrop-blur-2xl md:hidden">
+            <div className="flex flex-col gap-3 text-sm text-gray-300">
+              <a
+                href="#how-it-works"
+                onClick={() => setMobileMenuOpen(false)}
+                className="rounded-xl px-3 py-2 transition hover:bg-white/5 hover:text-white"
+              >
+                How it works
+              </a>
+
+              <a
+                href="#analyzer"
+                onClick={() => setMobileMenuOpen(false)}
+                className="rounded-xl px-3 py-2 transition hover:bg-white/5 hover:text-white"
+              >
+                Analyzer
+              </a>
+
+              <div
+                className="rounded-xl px-3 py-2 transition hover:bg-white/5"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <GitHubLink className="transition hover:text-white" />
+              </div>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero */}
