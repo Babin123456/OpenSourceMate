@@ -1,6 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
-
+import { useEffect, useMemo, useState } from "react";
 import GitHubLink from "../components/GitHubLink";
 
 type Profile = {
@@ -18,6 +17,23 @@ type Skill = {
   name: string;
   repository_count: number;
   percentage: number;
+};
+
+type Recommendation = {
+  id: number;
+  title: string;
+  repository: string;
+  url: string;
+  state: string;
+  labels: string[];
+  comments: number;
+  created_at: string;
+  updated_at: string;
+  language?: string;
+  match_score?: number;
+  score?: number;
+  match_reasons?: string[];
+  reasons?: string[];
 };
 
 type SkillsData = {
@@ -51,11 +67,15 @@ export default function Home() {
 const [theme, setTheme] = useState<"dark" | "light">("dark");
 
 useEffect(() => {
-  const savedTheme = localStorage.getItem("theme");
+  const timer = setTimeout(() => {
+    const savedTheme = localStorage.getItem("theme");
 
-  if (savedTheme === "light" || savedTheme === "dark") {
-    setTheme(savedTheme);
-  }
+    if (savedTheme === "light" || savedTheme === "dark") {
+      setTheme(savedTheme);
+    }
+  }, 0);
+
+  return () => clearTimeout(timer);
 }, []);
 
 useEffect(() => {
@@ -67,10 +87,108 @@ useEffect(() => {
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [skills, setSkills] = useState<SkillsData | null>(null);
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [loadingMatching, setLoadingMatching] = useState(false);
+  const [matchingError, setMatchingError] = useState("");
+
+  // Filters for recommended issues (Issue #47)
+  const [languageFilter, setLanguageFilter] = useState("all");
+  const [labelFilter, setLabelFilter] = useState("all");
+  const [minScoreFilter, setMinScoreFilter] = useState<number>(0);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [error, setError] = useState("");
   const [lastAnalyzed, setLastAnalyzed] = useState("");
   const [canRetry, setCanRetry] = useState(false);
+
+  const fetchMatchedIssues = async (targetUsername: string) => {
+    setLoadingMatching(true);
+    setMatchingError("");
+
+    try {
+      const matchResponse = await fetch(
+        `${API_URL}/api/matching/users/${encodeURIComponent(targetUsername)}/issues`
+      );
+
+      if (!matchResponse.ok) {
+        setMatchingError("Unable to load recommended issues right now.");
+        return;
+      }
+
+      const matchData = await matchResponse.json();
+      setRecommendations(matchData.recommendations || []);
+    } catch {
+      setMatchingError("Unable to load recommended issues. Please try again later.");
+    } finally {
+      setLoadingMatching(false);
+    }
+  };
+
+  // Dynamic language options extracted from recommendations
+  const availableLanguages = useMemo(() => {
+    const langs = new Set<string>();
+    recommendations.forEach((rec) => {
+      if (rec.language) langs.add(rec.language);
+    });
+    return Array.from(langs).sort();
+  }, [recommendations]);
+
+  // Client-side filtering logic (Issue #47)
+  const filteredRecommendations = useMemo(() => {
+    return recommendations.filter((rec) => {
+      if (
+        languageFilter !== "all" &&
+        rec.language?.toLowerCase() !== languageFilter.toLowerCase()
+      ) {
+        return false;
+      }
+
+      if (labelFilter === "good-first-issue") {
+        const hasGFI = rec.labels?.some((l) =>
+          l.toLowerCase().includes("good first issue")
+        );
+        if (!hasGFI) return false;
+      } else if (labelFilter === "help-wanted") {
+        const hasHW = rec.labels?.some((l) =>
+          l.toLowerCase().includes("help wanted")
+        );
+        if (!hasHW) return false;
+      }
+
+      const score = rec.match_score ?? rec.score ?? 0;
+      if (score < minScoreFilter) {
+        return false;
+      }
+
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const matchesTitle = rec.title?.toLowerCase().includes(q);
+        const matchesRepo = rec.repository?.toLowerCase().includes(q);
+        if (!matchesTitle && !matchesRepo) return false;
+      }
+
+      return true;
+    });
+  }, [
+    recommendations,
+    languageFilter,
+    labelFilter,
+    minScoreFilter,
+    searchQuery,
+  ]);
+
+  const hasActiveFilters =
+    languageFilter !== "all" ||
+    labelFilter !== "all" ||
+    minScoreFilter > 0 ||
+    searchQuery.trim().length > 0;
+
+  const resetFilters = () => {
+    setLanguageFilter("all");
+    setLabelFilter("all");
+    setMinScoreFilter(0);
+    setSearchQuery("");
+  };
 
   const analyzeProfile = async (override?: string) => {
     const cleanUsername = (override ?? username).trim().replace(/^@/, "");
@@ -152,6 +270,8 @@ useEffect(() => {
 
       setProfile(profileData);
       setSkills(skillsData);
+
+      fetchMatchedIssues(cleanUsername);
     } catch (err) {
       setCanRetry(true);
       if (err instanceof TypeError) {
@@ -513,36 +633,155 @@ useEffect(() => {
               </div>
             )}
 
-            {/* Coming next */}
-            <div className="mt-6 rounded-3xl border border-purple-500/20 bg-gradient-to-br from-purple-500/10 via-transparent to-blue-500/5 p-6 sm:p-8">
-
-              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-
+            {/* Recommendations Section with Filters (Issues #40, #47) */}
+            <div id="recommendations" className="mt-6 rounded-3xl border border-purple-500/20 bg-white/[0.035] p-6 sm:p-8">
+              <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
                 <div>
-                  <div className="mb-3 inline-flex rounded-full border border-purple-400/20 bg-purple-400/10 px-3 py-1 text-xs font-medium text-purple-300">
-                    NEXT
+                  <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-purple-400/20 bg-purple-400/10 px-3 py-1 text-xs font-medium text-purple-300">
+                    <span>🎯</span> MATCHED ISSUES
                   </div>
 
-                  <h3 className="text-xl font-bold">
-                    Find issues that match your skills
+                  <h3 className="text-2xl font-bold tracking-tight">
+                    Recommended contribution opportunities
                   </h3>
 
-                  <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-500">
-                    OpenSourceMate will compare your technical profile with
-                    open GitHub issues and recommend contribution opportunities
-                    based on compatibility.
+                  <p className="mt-2 text-sm text-gray-500">
+                    Filter and discover open GitHub issues tailored to your profile.
                   </p>
                 </div>
 
-                <div className="shrink-0 rounded-2xl border border-white/10 bg-black/20 px-5 py-4 text-center">
-                  <p className="text-2xl">🎯</p>
-                  <p className="mt-1 text-xs text-gray-500">
-                    Coming next
-                  </p>
-                </div>
-
+                {recommendations.length > 0 && (
+                  <div className="text-xs text-gray-500">
+                    Showing {filteredRecommendations.length} of {recommendations.length} issues
+                  </div>
+                )}
               </div>
 
+              {/* Filters Bar (Issue #47) */}
+              {!loadingMatching && recommendations.length > 0 && (
+                <div className="mt-6 rounded-2xl border border-white/5 bg-black/30 p-4 sm:p-5">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        placeholder="Search issue title or repository..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs text-white outline-none placeholder:text-gray-500 focus:border-purple-400/50 sm:text-sm"
+                      />
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      {availableLanguages.length > 0 && (
+                        <select
+                          value={languageFilter}
+                          onChange={(e) => setLanguageFilter(e.target.value)}
+                          className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-gray-200 outline-none hover:bg-white/10 sm:text-sm"
+                        >
+                          <option value="all" className="bg-[#0f121d] text-white">
+                            All Languages
+                          </option>
+                          {availableLanguages.map((lang) => (
+                            <option key={lang} value={lang} className="bg-[#0f121d] text-white">
+                              {lang}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+
+                      <select
+                        value={labelFilter}
+                        onChange={(e) => setLabelFilter(e.target.value)}
+                        className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-gray-200 outline-none hover:bg-white/10 sm:text-sm"
+                      >
+                        <option value="all" className="bg-[#0f121d] text-white">
+                          All Issue Types
+                        </option>
+                        <option value="good-first-issue" className="bg-[#0f121d] text-white">
+                          Good First Issue
+                        </option>
+                        <option value="help-wanted" className="bg-[#0f121d] text-white">
+                          Help Wanted
+                        </option>
+                      </select>
+
+                      <select
+                        value={minScoreFilter}
+                        onChange={(e) => setMinScoreFilter(Number(e.target.value))}
+                        className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-gray-200 outline-none hover:bg-white/10 sm:text-sm"
+                      >
+                        <option value="0" className="bg-[#0f121d] text-white">
+                          All Scores
+                        </option>
+                        <option value="40" className="bg-[#0f121d] text-white">
+                          40%+ Match
+                        </option>
+                        <option value="60" className="bg-[#0f121d] text-white">
+                          60%+ Match
+                        </option>
+                        <option value="75" className="bg-[#0f121d] text-white">
+                          75%+ Match
+                        </option>
+                      </select>
+
+                      {hasActiveFilters && (
+                        <button
+                          onClick={resetFilters}
+                          className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-purple-300 transition hover:bg-white/10 hover:text-white"
+                        >
+                          Reset Filters
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Loading State */}
+              {loadingMatching && (
+                <div className="mt-8 rounded-2xl border border-dashed border-white/10 p-10 text-center">
+                  <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-purple-400 border-t-transparent" />
+                  <p className="text-sm text-gray-300">Searching GitHub for issues matching your skills...</p>
+                </div>
+              )}
+
+              {/* Error State */}
+              {!loadingMatching && matchingError && (
+                <div className="mt-6 rounded-2xl border border-red-500/20 bg-red-500/10 p-5 text-center">
+                  <p className="text-sm text-red-300">{matchingError}</p>
+                </div>
+              )}
+
+              {/* Filtered 0 results */}
+              {!loadingMatching && !matchingError && recommendations.length > 0 && filteredRecommendations.length === 0 && (
+                <div className="mt-8 rounded-2xl border border-dashed border-white/10 p-10 text-center">
+                  <p className="text-sm text-gray-400">No issues match the selected filters.</p>
+                  <button
+                    onClick={resetFilters}
+                    className="mt-3 rounded-xl bg-white/5 px-4 py-2 text-xs text-white hover:bg-white/10"
+                  >
+                    Clear Filters
+                  </button>
+                </div>
+              )}
+
+              {/* Empty State */}
+              {!loadingMatching && !matchingError && recommendations.length === 0 && (
+                <div className="mt-8 rounded-2xl border border-dashed border-white/10 p-10 text-center">
+                  <p className="text-gray-400">
+                    No matching open issues found for the detected skills at this time.
+                  </p>
+                </div>
+              )}
+
+              {/* Issue list */}
+              {!loadingMatching && filteredRecommendations.length > 0 && (
+                <div className="mt-6 space-y-4">
+                  {filteredRecommendations.map((issue) => (
+                    <IssueCard key={issue.id} issue={issue} />
+                  ))}
+                </div>
+              )}
             </div>
 
           </div>
@@ -723,6 +962,120 @@ function SkillCard({
     </div>
   );
 }
+
+
+function IssueCard({
+  issue,
+}: {
+  issue: Recommendation;
+}) {
+  const score = issue.match_score ?? issue.score ?? 0;
+  const reasons = issue.match_reasons ?? issue.reasons ?? [];
+
+  const getScoreBadgeStyle = (s: number) => {
+    if (s >= 70) return "border-emerald-500/30 bg-emerald-500/10 text-emerald-400";
+    if (s >= 40) return "border-purple-500/30 bg-purple-500/10 text-purple-300";
+    return "border-blue-500/30 bg-blue-500/10 text-blue-300";
+  };
+
+  const formattedDate = issue.updated_at
+    ? new Date(issue.updated_at).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : null;
+
+  return (
+    <div className="rounded-2xl border border-white/10 bg-black/20 p-5 transition hover:border-white/20 sm:p-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex-1">
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <span className="font-mono text-purple-300">{issue.repository}</span>
+            {issue.language && (
+              <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-gray-300">
+                {issue.language}
+              </span>
+            )}
+            {formattedDate && (
+              <span className="text-gray-500">Updated {formattedDate}</span>
+            )}
+            <span className="text-gray-500">💬 {issue.comments} comments</span>
+          </div>
+
+          <h4 className="mt-2 text-base font-semibold leading-snug sm:text-lg">
+            <a
+              href={issue.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition hover:text-purple-300"
+            >
+              {issue.title}
+            </a>
+          </h4>
+
+          {issue.labels && issue.labels.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {issue.labels.slice(0, 6).map((label, idx) => {
+                const isGoodFirst = label.toLowerCase().includes("good first issue");
+                const isHelpWanted = label.toLowerCase().includes("help wanted");
+                return (
+                  <span
+                    key={idx}
+                    className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
+                      isGoodFirst
+                        ? "border border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
+                        : isHelpWanted
+                        ? "border border-amber-400/30 bg-amber-400/10 text-amber-300"
+                        : "border border-white/10 bg-white/5 text-gray-400"
+                    }`}
+                  >
+                    {label}
+                  </span>
+                );
+              })}
+            </div>
+          )}
+
+          {reasons.length > 0 && (
+            <div className="mt-4 rounded-xl border border-white/5 bg-white/[0.02] p-3 text-xs text-gray-400">
+              <p className="font-medium text-gray-300">Why this matches:</p>
+              <ul className="mt-1.5 space-y-1">
+                {reasons.map((reason, i) => (
+                  <li key={i} className="flex items-center gap-1.5">
+                    <span className="text-purple-400">✓</span>
+                    <span>{reason}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        <div className="flex shrink-0 flex-row items-center justify-between gap-3 sm:flex-col sm:items-end">
+          <div
+            className={`rounded-xl border px-3 py-1.5 text-center text-xs font-semibold ${getScoreBadgeStyle(
+              score
+            )}`}
+          >
+            <span className="text-sm font-bold sm:text-base">{score}%</span>
+            <span className="block text-[10px] uppercase text-gray-400">Match</span>
+          </div>
+
+          <a
+            href={issue.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-gray-200 transition hover:bg-white hover:text-black"
+          >
+            View on GitHub ↗
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function StepCard({
   number,
   icon,
