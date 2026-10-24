@@ -105,28 +105,48 @@ async def get_github_user(username: str):
     return user
 
 
+MAX_REPOSITORY_PAGES = 3
+REPOS_PER_PAGE = 100
+
+
 async def get_user_repositories(username: str):
+    """Fetch public repositories for a user, following pagination up to MAX_REPOSITORY_PAGES.
+
+    Caps at 300 repositories (3 pages) so large profiles do not hang indefinitely.
+    """
     key = f"github:repos:{username.lower()}"
     cached = cache.get(key)
 
     if cached is not None:
         return cached
 
-    params = {
-        "per_page": 100,
-        "sort": "updated",
-    }
+    repositories = []
 
-    response = await github_get(
-        f"{GITHUB_API_URL}/users/{username}/repos", params=params
-    )
+    for page in range(1, MAX_REPOSITORY_PAGES + 1):
+        params = {
+            "per_page": REPOS_PER_PAGE,
+            "sort": "updated",
+            "page": page,
+        }
 
-    if response.status_code == 404:
-        return None
+        response = await github_get(
+            f"{GITHUB_API_URL}/users/{username}/repos", params=params
+        )
 
-    response.raise_for_status()
+        if response.status_code == 404:
+            return None
 
-    repositories = response.json()
+        response.raise_for_status()
+
+        page_repos = response.json()
+        if not isinstance(page_repos, list):
+            break
+
+        repositories.extend(page_repos)
+
+        if len(page_repos) < REPOS_PER_PAGE:
+            break
+
     cache.set(key, repositories, get_settings().github_cache_ttl)
 
     return repositories

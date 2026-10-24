@@ -150,3 +150,24 @@ def test_no_auth_header_without_token(monkeypatch):
     client = github_service.get_client()
 
     assert "Authorization" not in client.headers
+
+
+async def test_get_user_repositories_paginates_beyond_first_page(github_mock):
+    calls = []
+
+    def handler(request):
+        page = request.url.params.get("page", "1")
+        calls.append(page)
+        if page == "1":
+            # Return 100 repos for page 1
+            return httpx.Response(200, json=[{"name": f"repo-{i}"} for i in range(100)])
+        elif page == "2":
+            # Return 25 repos for page 2 (terminates pagination)
+            return httpx.Response(200, json=[{"name": f"repo-{100+i}"} for i in range(25)])
+        return httpx.Response(200, json=[])
+
+    github_mock(handler)
+    repos = await get_user_repositories("prolific-coder")
+
+    assert len(repos) == 125
+    assert calls == ["1", "2"]
