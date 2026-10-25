@@ -92,3 +92,83 @@ class TestMatchingService(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+from app.services.matching_service import build_idf  # noqa: E402
+
+
+def _issue(title, body="", language="Python", **extra):
+    base = {
+        "title": title,
+        "body": body,
+        "repository": "acme/project",
+        "labels": ["good first issue"],
+        "language": language,
+        "comments": 1,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    base.update(extra)
+    return base
+
+
+class TestTextMatching(unittest.TestCase):
+    skills = [
+        {"name": "Python", "weight": 1.0},
+        {"name": "FastAPI", "weight": 0.5},
+    ]
+
+    def test_issue_mentioning_a_skill_ranks_above_an_unrelated_one(self):
+        related = _issue("Add FastAPI dependency for auth", "Use Depends in the FastAPI router")
+        unrelated = _issue("Fix typo in docs")
+        idf = build_idf([related, unrelated], self.skills)
+
+        related_result = calculate_issue_score(related, self.skills, idf)
+        unrelated_result = calculate_issue_score(unrelated, self.skills, idf)
+
+        self.assertGreater(related_result["raw_score"], unrelated_result["raw_score"])
+        self.assertEqual(related_result["matched_skills"], ["fastapi"])
+        self.assertEqual(unrelated_result["matched_skills"], [])
+
+    def test_language_only_counts_when_it_is_in_the_profile(self):
+        known = calculate_issue_score(_issue("x", language="Python"), self.skills)
+        unknown = calculate_issue_score(_issue("x", language="Haskell"), self.skills)
+        missing = calculate_issue_score(_issue("x", language=None), self.skills)
+
+        self.assertGreater(known["score"], unknown["score"])
+        self.assertEqual(unknown["score"], missing["score"])
+
+    def test_heavier_skill_is_worth_more(self):
+        main = calculate_issue_score(_issue("x", language="Python"), self.skills)
+        side = calculate_issue_score(_issue("x", language="FastAPI"), self.skills)
+
+        self.assertGreater(main["score"], side["score"])
+
+    def test_rare_skill_has_higher_idf_than_one_in_every_issue(self):
+        issues = [
+            _issue("Python tweak"),
+            _issue("Python bug"),
+            _issue("Python and FastAPI route"),
+        ]
+
+        idf = build_idf(issues, self.skills)
+
+        self.assertGreater(idf["fastapi"], idf["python"])
+
+    def test_empty_body_and_missing_fields_do_not_crash(self):
+        result = calculate_issue_score({"title": None, "body": None}, self.skills)
+
+        self.assertEqual(result["matched_skills"], [])
+        self.assertEqual(result["score_method"], "keyword-tfidf")
+
+    def test_plain_skill_names_still_work(self):
+        result = calculate_issue_score(_issue("Python cleanup"), ["Python"])
+
+        self.assertIn("python", result["matched_skills"])
+
+    def test_score_stays_capped_at_100_but_raw_score_keeps_order(self):
+        strong = _issue("Python FastAPI Python FastAPI", "Python FastAPI " * 20, labels=["good first issue", "help wanted"])
+
+        result = calculate_issue_score(strong, self.skills)
+
+        self.assertLessEqual(result["score"], 100)
+        self.assertGreaterEqual(result["raw_score"], result["score"])
