@@ -50,6 +50,61 @@ def _issue_term_counts(issue: dict, skill_names: set[str]) -> Counter:
     return counts
 
 
+def categorize_issue_freshness(
+    updated_at_str: str | None,
+    now: datetime | None = None,
+) -> dict:
+    """
+    Categorize issue freshness into 'Active', 'Recent', or 'Stale'
+    along with days since last update, human-readable label, and is_stale flag.
+    """
+    if not updated_at_str:
+        return {
+            "status": "Unknown",
+            "days_ago": None,
+            "label": "Unknown activity",
+            "is_stale": False,
+        }
+
+    try:
+        updated = datetime.fromisoformat(
+            updated_at_str.replace("Z", "+00:00")
+        )
+        current_time = now or datetime.now(timezone.utc)
+        days = max(0, (current_time - updated).days)
+
+        if days <= 14:
+            status = "Active"
+            is_stale = False
+        elif days <= 60:
+            status = "Recent"
+            is_stale = False
+        else:
+            status = "Stale"
+            is_stale = True
+
+        if days == 0:
+            label = "Updated today"
+        elif days == 1:
+            label = "Updated yesterday"
+        else:
+            label = f"Updated {days}d ago"
+
+        return {
+            "status": status,
+            "days_ago": days,
+            "label": label,
+            "is_stale": is_stale,
+        }
+    except (ValueError, TypeError):
+        return {
+            "status": "Unknown",
+            "days_ago": None,
+            "label": "Unknown activity",
+            "is_stale": False,
+        }
+
+
 def build_idf(issues: list[dict], user_skills: list) -> dict[str, float]:
     """Inverse document frequency of each skill over the fetched issues.
 
@@ -209,8 +264,11 @@ def calculate_issue_score(
     # Never exceed 100
     score = min(score, 100)
 
+    freshness = categorize_issue_freshness(updated_at)
+
     return {
         "score": score,
+        "freshness": freshness,
         "raw_score": raw_score,
         "matched_skills": sorted(matched_skills),
         "score_method": (
