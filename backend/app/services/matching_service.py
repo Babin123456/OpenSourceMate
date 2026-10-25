@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 
 SCORE_METHOD = "keyword-tfidf"
 MAX_TEXT_POINTS = 30
+MAX_EMBEDDING_POINTS = 25
 
 _TOKEN = re.compile(r"[a-z0-9][a-z0-9+#.\-]*")
 
@@ -75,6 +76,7 @@ def calculate_issue_score(
     issue: dict,
     user_skills: list,
     idf: dict[str, float] | None = None,
+    embedding_similarity: float | None = None,
 ) -> dict:
     """
     Calculate a transparent compatibility score between
@@ -124,6 +126,13 @@ def calculate_issue_score(
         )
 
     text_points = min(round(text_points), MAX_TEXT_POINTS)
+
+    # Optional semantic score, only present when the embedding model is available.
+    if embedding_similarity is not None:
+        embedding_points = round(MAX_EMBEDDING_POINTS * embedding_similarity)
+        if embedding_points:
+            score += embedding_points
+            reasons.append("The issue is semantically close to your skills.")
 
     if text_points:
         score += text_points
@@ -204,6 +213,10 @@ def calculate_issue_score(
         "score": score,
         "raw_score": raw_score,
         "matched_skills": sorted(matched_skills),
-        "score_method": SCORE_METHOD,
+        "score_method": (
+            "keyword-tfidf+embeddings"
+            if embedding_similarity is not None
+            else SCORE_METHOD
+        ),
         "reasons": reasons,
     }

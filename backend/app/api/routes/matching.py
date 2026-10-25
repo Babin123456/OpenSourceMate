@@ -6,6 +6,7 @@ from app.services.github_service import (
 )
 from app.services.skill_service import analyze_skills
 from app.services.issue_service import search_github_issues
+from app.services.embedding_service import similarities
 from app.services.matching_service import build_idf, calculate_issue_score
 
 
@@ -78,13 +79,17 @@ async def get_matched_issues(username: str):
     # result mentions counts for less than a rare one.
     idf = build_idf(found_issues, weighted_skills)
 
+    # None unless OSM_USE_EMBEDDINGS is on and sentence-transformers is installed.
+    semantic = similarities(weighted_skills, found_issues)
+
     all_issues = []
 
-    for issue in found_issues:
+    for index, issue in enumerate(found_issues):
         match = calculate_issue_score(
             issue,
             weighted_skills,
             idf,
+            semantic[index] if semantic is not None else None,
         )
 
         all_issues.append(
