@@ -1,6 +1,6 @@
 "use client";
+import { useEffect, useState } from "react";
 
-import { useState } from "react";
 import GitHubLink from "../components/GitHubLink";
 
 type Profile = {
@@ -48,7 +48,20 @@ async function rateLimitMessage(response: Response): Promise<string> {
 
 export default function Home() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const [theme, setTheme] = useState<"dark" | "light">("dark");
 
+useEffect(() => {
+  const savedTheme = localStorage.getItem("theme");
+
+  if (savedTheme === "light" || savedTheme === "dark") {
+    setTheme(savedTheme);
+  }
+}, []);
+
+useEffect(() => {
+  document.documentElement.dataset.theme = theme;
+  localStorage.setItem("theme", theme);
+}, [theme]);
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -154,7 +167,13 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#05070d] text-white">
+    <main
+  className={`min-h-screen overflow-hidden transition-colors duration-300 ${
+    theme === "dark"
+      ? "bg-[#05070d] text-white"
+      : "bg-gray-50 text-gray-900"
+  }`}
+>
 
       {/* Background decoration */}
       <div className="pointer-events-none fixed inset-0 -z-10">
@@ -163,7 +182,13 @@ export default function Home() {
       </div>
 
       {/* Navbar */}
-      <nav className="border-b border-white/5 bg-[#05070d]/80 backdrop-blur-xl">
+      <nav
+  className={`border-b backdrop-blur-xl transition-colors duration-300 ${
+    theme === "dark"
+      ? "border-white/5 bg-[#05070d]/80"
+      : "border-gray-200 bg-white/90"
+  }`}
+>
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
 
           <div className="flex items-center gap-3">
@@ -176,7 +201,11 @@ export default function Home() {
             </span>
           </div>
 
-          <div className="hidden items-center gap-8 text-sm text-gray-400 md:flex">
+          <div
+  className={`hidden items-center gap-8 text-sm md:flex ${
+    theme === "dark" ? "text-gray-400" : "text-gray-600"
+  }`}
+>
             <a
               href="#how-it-works"
               className="transition hover:text-white"
@@ -192,6 +221,16 @@ export default function Home() {
             </a>
 
             <GitHubLink className="transition hover:text-white"/>
+            <button
+  type="button"
+  onClick={() => setTheme((current) =>
+    current === "dark" ? "light" : "dark"
+  )}
+  aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+  className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm transition hover:bg-white/10"
+>
+  {theme === "dark" ? "☀️ Light mode" : "🌙 Dark mode"}
+</button>
           </div>
 
         </div>
@@ -201,19 +240,35 @@ export default function Home() {
       <section className="px-6 pb-16 pt-20 sm:pt-28">
         <div className="mx-auto max-w-5xl text-center">
 
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-gray-300">
+          <div
+  className={`mb-6 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm ${
+    theme === "dark"
+      ? "border-white/10 bg-white/[0.04] text-gray-300"
+      : "border-gray-200 bg-white text-gray-700"
+  }`}
+>
             <span className="h-2 w-2 rounded-full bg-emerald-400" />
             Open-source contribution discovery
           </div>
 
           <h1 className="mx-auto max-w-4xl text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
             Find the open-source issues
-            <span className="block bg-gradient-to-r from-white via-gray-300 to-gray-500 bg-clip-text text-transparent">
-              that fit your skills.
-            </span>
+    <span
+  className={`block bg-clip-text text-transparent ${
+    theme === "dark"
+      ? "bg-gradient-to-r from-white via-gray-300 to-gray-500"
+      : "bg-gradient-to-r from-gray-700 via-gray-600 to-gray-500"
+  }`}
+>
+  that fit your skills.
+</span>
           </h1>
 
-          <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-gray-400 sm:text-lg">
+          <p
+  className={`mx-auto mt-6 max-w-2xl text-base leading-7 sm:text-lg ${
+    theme === "dark" ? "text-gray-400" : "text-gray-600"
+  }`}
+>
             OpenSourceMate analyzes your GitHub profile and technical
             experience to help you discover meaningful open-source
             contribution opportunities.
@@ -226,11 +281,23 @@ export default function Home() {
       <section id="analyzer" className="px-6 pb-20">
         <div className="mx-auto max-w-3xl">
 
-          <div className="rounded-3xl border border-white/10 bg-white/[0.035] p-3 shadow-2xl shadow-black/30 backdrop-blur-xl sm:p-4">
+         <div
+  className={`rounded-3xl border p-3 shadow-2xl backdrop-blur-xl sm:p-4 ${
+    theme === "dark"
+      ? "border-white/10 bg-white/[0.035] shadow-black/30"
+      : "border-gray-200 bg-white shadow-gray-300/40"
+  }`}
+> 
 
             <div className="flex flex-col gap-3 sm:flex-row">
 
-              <div className="flex flex-1 items-center rounded-2xl border border-white/10 bg-black/20 px-5">
+              <div
+  className={`flex flex-1 items-center rounded-2xl border px-5 ${
+    theme === "dark"
+      ? "border-white/10 bg-black/20"
+      : "border-gray-200 bg-white"
+  }`}
+>
 
                 <span className="mr-3 text-gray-500">
                   @
@@ -249,7 +316,11 @@ export default function Home() {
                       analyzeProfile();
                     }
                   }}
-                  className="w-full bg-transparent py-4 text-sm text-white outline-none placeholder:text-gray-600 sm:text-base"
+                  className={`w-full bg-transparent py-4 text-sm outline-none sm:text-base ${
+  theme === "dark"
+    ? "text-white placeholder:text-gray-500"
+    : "text-gray-900 placeholder:text-gray-500"
+}`}
                 />
 
               </div>
@@ -283,7 +354,11 @@ export default function Home() {
             </div>
           )}
 
-          <p className="mt-4 text-center text-xs text-gray-600">
+          <p
+  className={`mt-4 text-center text-xs ${
+    theme === "dark" ? "text-gray-600" : "text-gray-500"
+  }`}
+>
             No GitHub login required • Public profile data only
           </p>
 
@@ -503,6 +578,7 @@ export default function Home() {
               icon="⌕"
               title="Analyze your profile"
               description="Connect your public GitHub profile and understand your existing technical experience."
+              theme={theme}
             />
 
             <StepCard
@@ -510,6 +586,7 @@ export default function Home() {
               icon="✦"
               title="Understand your skills"
               description="OpenSourceMate analyzes your repositories to identify the technologies you already work with."
+              theme={theme}
             />
 
             <StepCard
@@ -517,6 +594,7 @@ export default function Home() {
               icon="→"
               title="Find your match"
               description="Discover open-source issues that align with your skills and contribution goals."
+              theme={theme}
             />
 
           </div>
@@ -645,21 +723,29 @@ function SkillCard({
     </div>
   );
 }
-
-
 function StepCard({
   number,
   icon,
   title,
   description,
+  theme,
 }: {
   number: string;
   icon: string;
   title: string;
   description: string;
-}) {
+  theme: "dark" | "light";
+}) 
+
+{
   return (
-    <div className="group rounded-3xl border border-white/10 bg-white/[0.025] p-6 transition hover:-translate-y-1 hover:bg-white/[0.04]">
+  <div
+  className={`group rounded-3xl border p-6 transition hover:-translate-y-1 ${
+    theme === "dark"
+      ? "border-white/10 bg-white/[0.025] hover:bg-white/[0.04]"
+      : "border-gray-200 bg-white shadow-sm hover:bg-gray-50"
+  }`}
+>  
 
       <div className="flex items-center justify-between">
 
