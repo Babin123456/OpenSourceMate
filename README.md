@@ -1,5 +1,8 @@
 # OpenSourceMate
 
+[![CI](https://github.com/Muskankr/OpenSourceMate/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Muskankr/OpenSourceMate/actions/workflows/ci.yml)
+
+
 > **Find open-source opportunities that match your skills.**
 
 OpenSourceMate is an AI-powered open-source contribution discovery platform that analyzes a developer's public GitHub profile and technical experience to help identify meaningful contribution opportunities.
@@ -90,8 +93,9 @@ OpenSourceMate/
 ### Backend
 
 * Python
-* Django
-* Django REST Framework
+* FastAPI
+* Uvicorn
+* Pydantic
 
 ### AI / Data
 
@@ -187,7 +191,19 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
-Then start the backend using the project's configured Django development entry point.
+Start the FastAPI backend server:
+
+```bash
+uvicorn app.main:app --reload --port 8000
+```
+
+The backend API will be available at:
+
+```text
+http://localhost:8000
+```
+
+Interactive OpenAPI documentation (Swagger UI) is accessible at `http://localhost:8000/docs`.
 
 ### Run the backend tests
 
@@ -324,7 +340,7 @@ Then open a pull request describing:
 * How you tested it
 * Any relevant screenshots or examples
 
-> A detailed `CONTRIBUTING.md` will be added as the contributor workflow matures.
+For detailed guidelines on setup, branch naming, PR conventions, and coding standards, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 

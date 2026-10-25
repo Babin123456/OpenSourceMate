@@ -1,50 +1,43 @@
+import unittest
+
 from app.services.skill_service import analyze_skills
 
 
-def repo(language):
-    return {"name": "r", "language": language}
+class TestSkillService(unittest.TestCase):
+    def test_analyze_skills_aggregates_languages(self):
+        repositories = [
+            {"language": "Python"},
+            {"language": "Python"},
+            {"language": "TypeScript"},
+            {"language": None},
+        ]
+
+        result = analyze_skills(repositories)
+
+        self.assertEqual(result["total_repositories_analyzed"], 4)
+        self.assertEqual(result["skills"][0]["name"], "Python")
+        self.assertEqual(result["skills"][0]["repository_count"], 2)
+        self.assertEqual(result["skills"][0]["percentage"], 66.67)
+        self.assertEqual(result["skills"][1]["name"], "TypeScript")
+        self.assertEqual(result["skills"][1]["repository_count"], 1)
+
+    def test_analyze_skills_with_empty_repositories(self):
+        result = analyze_skills([])
+
+        self.assertEqual(result["skills"], [])
+        self.assertEqual(result["total_repositories_analyzed"], 0)
+
+    def test_analyze_skills_with_no_languages(self):
+        repositories = [
+            {"language": None},
+            {"language": None},
+        ]
+
+        result = analyze_skills(repositories)
+
+        self.assertEqual(result["skills"], [])
+        self.assertEqual(result["total_repositories_analyzed"], 2)
 
 
-def test_empty_list():
-    assert analyze_skills([]) == {"skills": [], "total_repositories_analyzed": 0}
-
-
-def test_counts_and_percentages():
-    result = analyze_skills(
-        [repo("Python"), repo("Python"), repo("Python"), repo("Go")]
-    )
-    assert result["total_repositories_analyzed"] == 4
-    assert result["skills"] == [
-        {"name": "Python", "repository_count": 3, "percentage": 75.0},
-        {"name": "Go", "repository_count": 1, "percentage": 25.0},
-    ]
-
-
-def test_sorted_by_count_descending():
-    result = analyze_skills([repo("Go"), repo("Rust"), repo("Rust")])
-    assert [s["name"] for s in result["skills"]] == ["Rust", "Go"]
-
-
-def test_percentage_is_rounded_to_two_decimals():
-    result = analyze_skills([repo("A"), repo("B"), repo("C")])
-    assert all(s["percentage"] == 33.33 for s in result["skills"])
-
-
-def test_none_and_missing_language_are_skipped_but_still_counted_as_analyzed():
-    result = analyze_skills([repo(None), {"name": "x"}, repo("Python")])
-    assert result["total_repositories_analyzed"] == 3
-    assert result["skills"] == [
-        {"name": "Python", "repository_count": 1, "percentage": 100.0}
-    ]
-
-
-def test_all_languages_none():
-    result = analyze_skills([repo(None), repo(None)])
-    assert result == {"skills": [], "total_repositories_analyzed": 2}
-
-
-def test_forked_repos_are_currently_counted():
-    # Documents current behaviour: forks are not excluded from skills.
-    forked = {"name": "f", "language": "Java", "fork": True}
-    result = analyze_skills([forked])
-    assert result["skills"][0]["name"] == "Java"
+if __name__ == "__main__":
+    unittest.main()

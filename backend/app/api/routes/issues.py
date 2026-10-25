@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Query, HTTPException
 
+from app.services.github_service import GitHubRateLimitError
 from app.services.issue_service import search_github_issues
 
 
@@ -26,27 +27,11 @@ async def search_issues(
 
         return {
             "total_count": data["total_count"],
-            "issues": [
-                {
-                    "id": issue["id"],
-                    "title": issue["title"],
-                    "repository": issue["repository_url"].split(
-                        "/repos/"
-                    )[-1],
-                    "url": issue["html_url"],
-                    "state": issue["state"],
-                    "labels": [
-                        label["name"]
-                        for label in issue["labels"]
-                    ],
-                    "comments": issue["comments"],
-                    "created_at": issue["created_at"],
-                    "updated_at": issue["updated_at"],
-                    "user": issue["user"]["login"],
-                }
-                for issue in data["items"]
-            ],
+            "issues": data["issues"],
         }
+
+    except GitHubRateLimitError:
+        raise
 
     except Exception as exc:
         raise HTTPException(
