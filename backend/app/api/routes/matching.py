@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 
 from app.services.github_service import (
     GitHubRateLimitError,
@@ -16,7 +16,10 @@ router = APIRouter(
 
 
 @router.get("/users/{username}/issues")
-async def get_matched_issues(username: str):
+async def get_matched_issues(
+    username: str,
+    exclude_stale: bool = Query(default=False),
+):
     repositories = await get_user_repositories(username)
 
     if repositories is None:
@@ -61,6 +64,7 @@ async def get_matched_issues(username: str):
                         **issue,
                         "match_score": match["score"],
                         "match_reasons": match["reasons"],
+                        "freshness": match.get("freshness"),
                     }
                 )
 
@@ -80,6 +84,13 @@ async def get_matched_issues(username: str):
         unique_issues[issue["id"]] = issue
 
     recommendations = list(unique_issues.values())
+
+    # Optionally exclude stale issues (>60-90 days inactive)
+    if exclude_stale:
+        recommendations = [
+            iss for iss in recommendations
+            if not (iss.get("freshness") and iss["freshness"].get("is_stale"))
+        ]
 
     # Highest compatibility first.
     recommendations.sort(
