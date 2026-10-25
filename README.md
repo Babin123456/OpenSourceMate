@@ -205,6 +205,15 @@ http://localhost:8000
 
 Interactive OpenAPI documentation (Swagger UI) is accessible at `http://localhost:8000/docs`.
 
+### Run the backend tests
+
+The tests mock the GitHub API, so no network or token is needed.
+
+```bash
+pip install -r requirements-dev.txt
+pytest --cov=app
+```
+
 > Backend setup is currently evolving. More detailed setup instructions and environment configuration will be documented as the project develops.
 
 ---
