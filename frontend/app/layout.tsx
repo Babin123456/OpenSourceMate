@@ -21,8 +21,8 @@ export const metadata: Metadata = {
   description: siteDescription,
   applicationName: "OpenSourceMate",
   icons: {
-    icon: "/icon.svg",
-    shortcut: "/icon.svg",
+    icon: "/image.png",
+    shortcut: "/image.png",
   },
   openGraph: {
     title: siteTitle,
