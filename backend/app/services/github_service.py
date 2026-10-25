@@ -150,3 +150,71 @@ async def get_user_repositories(username: str):
     cache.set(key, repositories, get_settings().github_cache_ttl)
 
     return repositories
+
+
+async def get_github_diagnostics() -> dict:
+    """Check GitHub API reachability, auth token presence, and quota status."""
+    settings = get_settings()
+    token = settings.github_token
+    token_configured = bool(token)
+    token_preview = None
+    if token:
+        clean = token.strip()
+        token_preview = f"{clean[:4]}****" if len(clean) >= 4 else "****"
+
+    client = get_client()
+    start_time = time.perf_counter()
+
+    try:
+        response = await client.get(f"{GITHUB_API_URL}/rate_limit")
+        latency_ms = round((time.perf_counter() - start_time) * 1000, 2)
+
+        if response.status_code == 200:
+            data = response.json()
+            resources = data.get("resources", {})
+            core = resources.get("core", {})
+            search = resources.get("search", {})
+
+            def _format_reset(ts: int | None) -> str | None:
+                if not ts:
+                    return None
+                return datetime.fromtimestamp(ts, tz=timezone.utc).isoformat()
+
+            return {
+                "reachable": True,
+                "latency_ms": latency_ms,
+                "token_configured": token_configured,
+                "token_preview": token_preview,
+                "rate_limit": {
+                    "core": {
+                        "limit": core.get("limit"),
+                        "remaining": core.get("remaining"),
+                        "reset_at": _format_reset(core.get("reset")),
+                    },
+                    "search": {
+                        "limit": search.get("limit"),
+                        "remaining": search.get("remaining"),
+                        "reset_at": _format_reset(search.get("reset")),
+                    },
+                },
+            }
+
+        return {
+            "reachable": False,
+            "status_code": response.status_code,
+            "latency_ms": latency_ms,
+            "token_configured": token_configured,
+            "token_preview": token_preview,
+            "rate_limit": None,
+        }
+
+    except Exception as exc:
+        latency_ms = round((time.perf_counter() - start_time) * 1000, 2)
+        return {
+            "reachable": False,
+            "latency_ms": latency_ms,
+            "token_configured": token_configured,
+            "token_preview": token_preview,
+            "error": str(exc),
+            "rate_limit": None,
+        }
