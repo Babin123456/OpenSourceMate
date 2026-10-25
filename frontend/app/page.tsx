@@ -2,6 +2,12 @@
 import { useEffect, useState } from "react";
 
 import GitHubLink from "../components/GitHubLink";
+import {
+  downloadFile,
+  generateJsonReport,
+  generateMarkdownReport,
+  type ExportPayload,
+} from "../utils/exportAnalysis";
 
 type Profile = {
   username: string;
@@ -117,6 +123,39 @@ useEffect(() => {
       setMatchingError("Unable to load recommended issues. Please try again later.");
     } finally {
       setLoadingMatching(false);
+    }
+  };
+
+  const handleExport = (format: "markdown" | "json") => {
+    if (!profile) return;
+
+    const payload: ExportPayload = {
+      username: profile.username,
+      name: profile.name,
+      bio: profile.bio,
+      profileUrl: profile.profile_url,
+      repositoriesCount: profile.public_repositories,
+      followers: profile.followers,
+      following: profile.following,
+      skills: skills?.skills || [],
+      totalRepositoriesAnalyzed: skills?.total_repositories_analyzed || 0,
+      exportedAt: new Date().toISOString().split("T")[0],
+    };
+
+    if (format === "markdown") {
+      const content = generateMarkdownReport(payload);
+      downloadFile(
+        content,
+        `opensourcemate-${profile.username}-analysis.md`,
+        "text/markdown;charset=utf-8"
+      );
+    } else {
+      const content = generateJsonReport(payload);
+      downloadFile(
+        content,
+        `opensourcemate-${profile.username}-analysis.json`,
+        "application/json;charset=utf-8"
+      );
     }
   };
 
@@ -502,18 +541,39 @@ useEffect(() => {
           <div className="mx-auto max-w-5xl">
 
             {/* Section heading */}
-            <div className="mb-8">
-              <p className="text-sm font-medium text-purple-400">
-                PROFILE ANALYSIS
-              </p>
+            <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+              <div>
+                <p className="text-sm font-medium text-purple-400">
+                  PROFILE ANALYSIS
+                </p>
 
-              <h2 className="mt-2 text-3xl font-bold tracking-tight">
-                Your developer profile
-              </h2>
+                <h2 className="mt-2 text-3xl font-bold tracking-tight">
+                  Your developer profile
+                </h2>
 
-              <p className="mt-2 text-gray-500">
-                Here&apos;s what OpenSourceMate discovered from your GitHub activity.
-              </p>
+                <p className="mt-2 text-gray-500">
+                  Here&apos;s what OpenSourceMate discovered from your GitHub activity.
+                </p>
+              </div>
+
+              {profile && (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleExport("markdown")}
+                    className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-gray-300 transition hover:bg-white/10 hover:text-white"
+                    title="Export summary as Markdown (.md)"
+                  >
+                    <span>↓</span> Export Markdown
+                  </button>
+                  <button
+                    onClick={() => handleExport("json")}
+                    className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-gray-300 transition hover:bg-white/10 hover:text-white"
+                    title="Export raw data as JSON (.json)"
+                  >
+                    <span>↓</span> Export JSON
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Profile card */}
