@@ -71,6 +71,66 @@ async def test_unknown_user_still_404(api, github_mock):
     assert response.status_code == 404
 
 
+async def test_matching_ranks_issue_that_mentions_a_skill_first(api, github_mock):
+    def item(issue_id, title, body):
+        return {
+            "id": issue_id,
+            "title": title,
+            "body": body,
+            "repository_url": "https://api.github.com/repos/acme/project",
+            "html_url": f"https://github.com/acme/project/issues/{issue_id}",
+            "state": "open",
+            "labels": [{"name": "good first issue"}],
+            "comments": 1,
+            "created_at": "2026-10-01T00:00:00Z",
+            "updated_at": "2026-10-20T00:00:00Z",
+            "user": {"login": "someone"},
+        }
+
+    def handler(request):
+        if request.url.path == "/users/octocat/repos":
+            return httpx.Response(
+                200,
+                json=[
+                    {
+                        "name": "api",
+                        "full_name": "octocat/api",
+                        "description": None,
+                        "language": "Python",
+                        "stargazers_count": 0,
+                        "forks_count": 0,
+                        "fork": False,
+                        "html_url": "https://github.com/octocat/api",
+                        "updated_at": "2026-01-01T00:00:00Z",
+                    }
+                ],
+            )
+
+        if request.url.path == "/search/issues":
+            return httpx.Response(
+                200,
+                json={
+                    "total_count": 2,
+                    "items": [
+                        item(1, "Fix typo in docs", ""),
+                        item(2, "Handle empty input", "The Python parser crashes on empty input"),
+                    ],
+                },
+            )
+
+        return httpx.Response(404)
+
+    github_mock(handler)
+
+    body = (await api.get("/api/matching/users/octocat/issues")).json()
+    first = body["recommendations"][0]
+
+    assert first["id"] == 2
+    assert first["matched_skills"] == ["python"]
+    assert first["score_method"] == "keyword-tfidf"
+    assert "_raw_score" not in first
+
+
 def _repo(name, **extra):
     base = {
         "name": name,
