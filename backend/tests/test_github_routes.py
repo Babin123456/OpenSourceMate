@@ -105,10 +105,13 @@ def test_skills_valid():
     assert response.status_code == 200
     assert body["username"] == "octocat"
     assert body["total_repositories_analyzed"] == 3
+    # type and weight are additive fields; the original three keys are unchanged.
     assert body["skills"][0] == {
         "name": "Python",
         "repository_count": 2,
         "percentage": 66.67,
+        "type": "language",
+        "weight": 1.0,
     }
 
 

@@ -1,3 +1,6 @@
+import base64
+import json
+import re
 import time
 from datetime import datetime, timezone
 
@@ -151,6 +154,109 @@ async def get_user_repositories(username: str):
 
     return repositories
 
+
+MAX_DETAIL_REPOSITORIES = 5
+MANIFEST_FILES = ("package.json", "requirements.txt", "pyproject.toml")
+
+
+def _dependencies_from_manifest(filename: str, text: str) -> list[str]:
+    if filename == "package.json":
+        try:
+            data = json.loads(text)
+        except ValueError:
+            return []
+
+        if not isinstance(data, dict):
+            return []
+
+        names = []
+        for section in ("dependencies", "devDependencies"):
+            values = data.get(section)
+            if isinstance(values, dict):
+                names.extend(values)
+        return names
+
+    if filename == "requirements.txt":
+        names = []
+        for line in text.splitlines():
+            line = line.split("#", 1)[0].strip()
+            match = re.match(r"[A-Za-z0-9_.-]+", line)
+            if match:
+                names.append(match.group(0))
+        return names
+
+    # pyproject.toml: take the leading package name of every quoted requirement string.
+    return re.findall(r"""["']([A-Za-z0-9_.-]+)\s*(?:[<>=!~\[;,]|["'])""", text)
+
+
+async def _fetch_manifest(full_name: str, filename: str) -> list[str]:
+    response = await github_get(
+        f"{GITHUB_API_URL}/repos/{full_name}/contents/{filename}"
+    )
+
+    if response.status_code != 200:
+        return []
+
+    content = response.json().get("content")
+    if not content:
+        return []
+
+    try:
+        text = base64.b64decode(content).decode("utf-8", errors="ignore")
+    except ValueError:
+        return []
+
+    return _dependencies_from_manifest(filename, text)
+
+
+async def _fetch_repo_details(full_name: str) -> dict:
+    key = f"github:repo-details:{full_name.lower()}"
+    cached = cache.get(key)
+
+    if cached is not None:
+        return cached
+
+    details = {"languages": {}, "dependencies": []}
+
+    response = await github_get(f"{GITHUB_API_URL}/repos/{full_name}/languages")
+    if response.status_code == 200 and isinstance(response.json(), dict):
+        details["languages"] = response.json()
+
+    for filename in MANIFEST_FILES:
+        try:
+            details["dependencies"].extend(await _fetch_manifest(full_name, filename))
+        except (httpx.HTTPError, ValueError):
+            # One file that will not load should not lose the rest.
+            continue
+
+    cache.set(key, details, get_settings().github_cache_ttl)
+
+    return details
+
+
+async def get_repository_details(
+    repositories: list[dict], limit: int = MAX_DETAIL_REPOSITORIES
+) -> dict[str, dict]:
+    """Languages and dependencies for the most recently updated non-fork repos.
+
+    Only `limit` repos are looked at so a large profile stays inside the GitHub
+    rate limit. Anything that fails is skipped; the skill list then falls back to
+    the main language and topics for that repo.
+    """
+    candidates = [r for r in repositories if not r.get("fork") and r.get("full_name")]
+    candidates.sort(key=lambda r: r.get("updated_at") or "", reverse=True)
+
+    details = {}
+
+    for repository in candidates[:limit]:
+        try:
+            details[repository["full_name"]] = await _fetch_repo_details(
+                repository["full_name"]
+            )
+        except (GitHubRateLimitError, httpx.HTTPError):
+            continue
+
+    return details
 
 async def get_github_diagnostics() -> dict:
     """Check GitHub API reachability, auth token presence, and quota status."""
