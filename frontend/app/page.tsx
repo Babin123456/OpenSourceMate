@@ -1,6 +1,13 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import GitHubLink from "../components/GitHubLink";
+import FAQ from "../components/FAQ";
+import {
+  downloadFile,
+  generateJsonReport,
+  generateMarkdownReport,
+  type ExportPayload,
+} from "../utils/exportAnalysis";
 
 type Profile = {
   username: string;
@@ -100,6 +107,7 @@ useEffect(() => {
   const [error, setError] = useState("");
   const [lastAnalyzed, setLastAnalyzed] = useState("");
   const [canRetry, setCanRetry] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const fetchMatchedIssues = async (targetUsername: string) => {
     setLoadingMatching(true);
@@ -123,6 +131,40 @@ useEffect(() => {
       setLoadingMatching(false);
     }
   };
+
+  const handleExport = (format: "markdown" | "json") => {
+    if (!profile) return;
+
+    const payload: ExportPayload = {
+      username: profile.username,
+      name: profile.name,
+      bio: profile.bio,
+      profileUrl: profile.profile_url,
+      repositoriesCount: profile.public_repositories,
+      followers: profile.followers,
+      following: profile.following,
+      skills: skills?.skills || [],
+      totalRepositoriesAnalyzed: skills?.total_repositories_analyzed || 0,
+      exportedAt: new Date().toISOString().split("T")[0],
+    };
+
+    if (format === "markdown") {
+      const content = generateMarkdownReport(payload);
+      downloadFile(
+        content,
+        `opensourcemate-${profile.username}-analysis.md`,
+        "text/markdown;charset=utf-8"
+      );
+    } else {
+      const content = generateJsonReport(payload);
+      downloadFile(
+        content,
+        `opensourcemate-${profile.username}-analysis.json`,
+        "application/json;charset=utf-8"
+      );
+    }
+  };
+
 
   // Dynamic language options extracted from recommendations
   const availableLanguages = useMemo(() => {
@@ -340,6 +382,13 @@ useEffect(() => {
               Analyzer
             </a>
 
+            <a
+              href="#faq"
+              className="transition hover:text-white"
+            >
+              FAQ
+            </a>
+
             <GitHubLink className="transition hover:text-white"/>
             <button
   type="button"
@@ -353,7 +402,86 @@ useEffect(() => {
 </button>
           </div>
 
+          {/* Mobile hamburger button */}
+          <div className="flex items-center md:hidden">
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              aria-label="Toggle navigation menu"
+              aria-expanded={mobileMenuOpen}
+              className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 p-2 text-gray-400 transition hover:bg-white/10 hover:text-white focus:outline-none"
+            >
+              {mobileMenuOpen ? (
+                <svg
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                </svg>
+              )}
+            </button>
+          </div>
+
         </div>
+
+        {/* Mobile dropdown menu */}
+        {mobileMenuOpen && (
+          <div className="border-t border-white/5 bg-[#05070d]/95 px-6 py-4 shadow-2xl backdrop-blur-2xl md:hidden">
+            <div className="flex flex-col gap-3 text-sm text-gray-300">
+              <a
+                href="#how-it-works"
+                onClick={() => setMobileMenuOpen(false)}
+                className="rounded-xl px-3 py-2 transition hover:bg-white/5 hover:text-white"
+              >
+                How it works
+              </a>
+
+              <a
+                href="#analyzer"
+                onClick={() => setMobileMenuOpen(false)}
+                className="rounded-xl px-3 py-2 transition hover:bg-white/5 hover:text-white"
+              >
+                Analyzer
+              </a>
+
+              <a
+                href="#faq"
+                onClick={() => setMobileMenuOpen(false)}
+                className="rounded-xl px-3 py-2 transition hover:bg-white/5 hover:text-white"
+              >
+                FAQ
+              </a>
+
+              <div
+                className="rounded-xl px-3 py-2 transition hover:bg-white/5"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <GitHubLink className="transition hover:text-white" />
+              </div>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero */}
@@ -501,18 +629,39 @@ useEffect(() => {
           <div className="mx-auto max-w-5xl">
 
             {/* Section heading */}
-            <div className="mb-8">
-              <p className="text-sm font-medium text-purple-400">
-                PROFILE ANALYSIS
-              </p>
+            <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+              <div>
+                <p className="text-sm font-medium text-purple-400">
+                  PROFILE ANALYSIS
+                </p>
 
-              <h2 className="mt-2 text-3xl font-bold tracking-tight">
-                Your developer profile
-              </h2>
+                <h2 className="mt-2 text-3xl font-bold tracking-tight">
+                  Your developer profile
+                </h2>
 
-              <p className="mt-2 text-gray-500">
-                Here&apos;s what OpenSourceMate discovered from your GitHub activity.
-              </p>
+                <p className="mt-2 text-gray-500">
+                  Here&apos;s what OpenSourceMate discovered from your GitHub activity.
+                </p>
+              </div>
+
+              {profile && (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleExport("markdown")}
+                    className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-gray-300 transition hover:bg-white/10 hover:text-white"
+                    title="Export summary as Markdown (.md)"
+                  >
+                    <span>↓</span> Export Markdown
+                  </button>
+                  <button
+                    onClick={() => handleExport("json")}
+                    className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-gray-300 transition hover:bg-white/10 hover:text-white"
+                    title="Export raw data as JSON (.json)"
+                  >
+                    <span>↓</span> Export JSON
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Profile card */}
@@ -646,7 +795,7 @@ useEffect(() => {
                   </h3>
 
                   <p className="mt-2 text-sm text-gray-500">
-                    Filter and discover open GitHub issues tailored to your profile.
+                    Opportunities matching your skills and experience, ranked by compatibility score.
                   </p>
                 </div>
 
@@ -837,6 +986,29 @@ useEffect(() => {
             />
 
           </div>
+
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section id="faq" className="px-6 pt-24">
+        <div className="mx-auto max-w-5xl">
+
+          <div className="text-center">
+            <p className="text-sm font-medium text-purple-400">
+              FAQ
+            </p>
+
+            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+              Frequently asked questions
+            </h2>
+
+            <p className="mx-auto mt-4 max-w-xl text-gray-500">
+              What OpenSourceMate looks at, and what it leaves alone.
+            </p>
+          </div>
+
+          <FAQ theme={theme} />
 
         </div>
       </section>
