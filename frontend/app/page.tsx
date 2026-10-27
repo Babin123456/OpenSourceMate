@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 
 import GitHubLink from "../components/GitHubLink";
+import FAQ from "../components/FAQ";
 import {
   downloadFile,
   generateJsonReport,
