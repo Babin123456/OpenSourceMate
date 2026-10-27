@@ -2,23 +2,13 @@
 import { useEffect, useState } from "react";
 
 import GitHubLink from "../components/GitHubLink";
+import ProfileCard, { type Profile } from "../components/ProfileCard";
 import {
   downloadFile,
   generateJsonReport,
   generateMarkdownReport,
   type ExportPayload,
 } from "../utils/exportAnalysis";
-
-type Profile = {
-  username: string;
-  name: string | null;
-  bio: string | null;
-  avatar_url: string;
-  public_repositories: number;
-  followers: number;
-  following: number;
-  profile_url: string;
-};
 
 type Skill = {
   name: string;
@@ -578,71 +568,10 @@ useEffect(() => {
 
             {/* Profile card */}
             {profile && (
-              <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.035]">
-
-                <div className="p-6 sm:p-8">
-
-                  <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-
-                    <div className="flex items-center gap-5">
-
-                      <img
-                        src={profile.avatar_url}
-                        alt={profile.username}
-                        className="h-20 w-20 rounded-2xl border border-white/10 object-cover sm:h-24 sm:w-24"
-                      />
-
-                      <div>
-                        <h3 className="text-xl font-bold sm:text-2xl">
-                          {profile.name || profile.username}
-                        </h3>
-
-                        <p className="mt-1 text-sm text-gray-500">
-                          @{profile.username}
-                        </p>
-
-                        {profile.bio && (
-                          <p className="mt-3 max-w-xl text-sm leading-6 text-gray-400">
-                            {profile.bio}
-                          </p>
-                        )}
-                      </div>
-
-                    </div>
-
-                    <a
-                      href={profile.profile_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-center text-sm font-medium text-gray-300 transition hover:bg-white/10 hover:text-white"
-                    >
-                      View GitHub ↗
-                    </a>
-
-                  </div>
-
-                  {/* Stats */}
-                  <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
-
-                    <StatCard
-                      value={profile.public_repositories}
-                      label="Repositories"
-                    />
-
-                    <StatCard
-                      value={profile.followers}
-                      label="Followers"
-                    />
-
-                    <StatCard
-                      value={profile.following}
-                      label="Following"
-                    />
-
-                  </div>
-
-                </div>
-              </div>
+              <ProfileCard
+                profile={profile}
+                onExport={(format) => handleExport(format)}
+              />
             )}
 
             {/* Skills */}
@@ -868,25 +797,6 @@ useEffect(() => {
 /* Reusable Components                */
 /* ---------------------------------- */
 
-function StatCard({
-  value,
-  label,
-}: {
-  value: number;
-  label: string;
-}) {
-  return (
-    <div className="rounded-2xl border border-white/5 bg-black/20 p-5">
-      <p className="text-2xl font-bold tracking-tight">
-        {value.toLocaleString()}
-      </p>
-
-      <p className="mt-1 text-xs uppercase tracking-wider text-gray-600">
-        {label}
-      </p>
-    </div>
-  );
-}
 
 
 function SkillCard({
