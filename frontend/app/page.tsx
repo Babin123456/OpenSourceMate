@@ -2,12 +2,19 @@
 import { useEffect, useState } from "react";
 
 import GitHubLink from "../components/GitHubLink";
+import RecentSearches from "../components/RecentSearches";
 import {
   downloadFile,
   generateJsonReport,
   generateMarkdownReport,
   type ExportPayload,
 } from "../utils/exportAnalysis";
+import {
+  getRecentSearches,
+  saveRecentSearch,
+  removeRecentSearch,
+  clearRecentSearches,
+} from "../utils/recentSearches";
 
 type Profile = {
   username: string;
@@ -102,6 +109,30 @@ useEffect(() => {
   const [lastAnalyzed, setLastAnalyzed] = useState("");
   const [canRetry, setCanRetry] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setRecentSearches(getRecentSearches());
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleSelectRecent = (recentUser: string) => {
+    setUsername(recentUser);
+    analyzeProfile(recentUser);
+  };
+
+  const handleRemoveRecent = (recentUser: string) => {
+    const updated = removeRecentSearch(recentUser);
+    setRecentSearches(updated);
+  };
+
+  const handleClearRecent = () => {
+    clearRecentSearches();
+    setRecentSearches([]);
+  };
 
   const fetchMatchedIssues = async (targetUsername: string) => {
     setLoadingMatching(true);
@@ -239,6 +270,10 @@ useEffect(() => {
 
       setProfile(profileData);
       setSkills(skillsData);
+
+      // Save to recent searches on successful analysis
+      const updatedSearches = saveRecentSearch(cleanUsername);
+      setRecentSearches(updatedSearches);
 
       fetchMatchedIssues(cleanUsername);
     } catch (err) {
@@ -494,6 +529,14 @@ useEffect(() => {
               </button>
 
             </div>
+
+            <RecentSearches
+              searches={recentSearches}
+              onSelect={handleSelectRecent}
+              onRemove={handleRemoveRecent}
+              onClear={handleClearRecent}
+              theme={theme}
+            />
 
           </div>
 
