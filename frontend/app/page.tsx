@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 
 import GitHubLink from "../components/GitHubLink";
+import FAQ from "../components/FAQ";
 import {
   downloadFile,
   generateJsonReport,
@@ -309,6 +310,13 @@ useEffect(() => {
               Analyzer
             </a>
 
+            <a
+              href="#faq"
+              className="transition hover:text-white"
+            >
+              FAQ
+            </a>
+
             <GitHubLink className="transition hover:text-white"/>
             <button
   type="button"
@@ -383,6 +391,14 @@ useEffect(() => {
                 className="rounded-xl px-3 py-2 transition hover:bg-white/5 hover:text-white"
               >
                 Analyzer
+              </a>
+
+              <a
+                href="#faq"
+                onClick={() => setMobileMenuOpen(false)}
+                className="rounded-xl px-3 py-2 transition hover:bg-white/5 hover:text-white"
+              >
+                FAQ
               </a>
 
               <div
@@ -805,6 +821,29 @@ useEffect(() => {
             />
 
           </div>
+
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section id="faq" className="px-6 pt-24">
+        <div className="mx-auto max-w-5xl">
+
+          <div className="text-center">
+            <p className="text-sm font-medium text-purple-400">
+              FAQ
+            </p>
+
+            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+              Frequently asked questions
+            </h2>
+
+            <p className="mx-auto mt-4 max-w-xl text-gray-500">
+              What OpenSourceMate looks at, and what it leaves alone.
+            </p>
+          </div>
+
+          <FAQ theme={theme} />
 
         </div>
       </section>
