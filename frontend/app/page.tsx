@@ -8,6 +8,10 @@ import {
   generateMarkdownReport,
   type ExportPayload,
 } from "../utils/exportAnalysis";
+import {
+  validateGitHubUsername,
+  resolveAnalyzerErrorMessage,
+} from "../utils/validation";
 
 type Profile = {
   username: string;
@@ -47,27 +51,6 @@ type SkillsData = {
   skills: Skill[];
   total_repositories_analyzed: number;
 };
-
-async function rateLimitMessage(response: Response): Promise<string> {
-  let resetAt: Date | null = null;
-
-  try {
-    const data = await response.json();
-    if (data.reset_at) resetAt = new Date(data.reset_at);
-  } catch {
-    // Body was not JSON, use the generic text below.
-  }
-
-  if (resetAt && !Number.isNaN(resetAt.getTime())) {
-    const time = resetAt.toLocaleTimeString([], {
-      hour: "numeric",
-      minute: "2-digit",
-    });
-    return `GitHub rate limit reached, try again at ${time}.`;
-  }
-
-  return "GitHub API rate limit reached. Please try again in a few minutes.";
-}
 
 export default function Home() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -160,22 +143,15 @@ useEffect(() => {
   };
 
   const analyzeProfile = async (override?: string) => {
-    const cleanUsername = (override ?? username).trim().replace(/^@/, "");
+    const raw = override ?? username;
+    const validation = validateGitHubUsername(raw);
 
-    if (!cleanUsername) {
-      setError("Please enter a GitHub username.");
+    if (!validation.isValid) {
+      setError(validation.error || "Please enter a valid GitHub username.");
       return;
     }
 
-    const usernamePattern =
-      /^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/;
-
-    if (!usernamePattern.test(cleanUsername)) {
-      setError(
-        "Invalid GitHub username. Use up to 39 letters, numbers, or single hyphens; don't start or end with a hyphen."
-      );
-      return;
-    }
+    const cleanUsername = validation.cleanUsername;
 
     if (loading) return;
 
@@ -189,6 +165,7 @@ useEffect(() => {
     if (cleanUsername.toLowerCase() !== profile?.username?.toLowerCase()) {
       setProfile(null);
       setSkills(null);
+      setRecommendations([]);
     }
 
     try {
@@ -200,21 +177,28 @@ useEffect(() => {
         `${API_URL}/api/github/users/${encodeURIComponent(cleanUsername)}`
       );
 
-      if (profileResponse.status === 429) {
-        throw new Error(await rateLimitMessage(profileResponse));
-      }
-
-      if (profileResponse.status === 502 || profileResponse.status === 503) {
-        throw new Error("GitHub API is temporarily unavailable. Please try again in a few moments.");
-      }
-
       if (profileResponse.status === 404) {
-        setError("GitHub user not found. Check the username and try again.");
+        setError(resolveAnalyzerErrorMessage(404, { username: cleanUsername }));
         return;
       }
 
+      if (profileResponse.status === 429) {
+        let resetAt: string | undefined;
+        try {
+          const data = await profileResponse.json();
+          if (data.reset_at) resetAt = data.reset_at;
+        } catch {
+          // ignore
+        }
+        throw new Error(resolveAnalyzerErrorMessage(429, { resetAt }));
+      }
+
+      if (profileResponse.status === 502 || profileResponse.status === 503) {
+        throw new Error(resolveAnalyzerErrorMessage(profileResponse.status));
+      }
+
       if (!profileResponse.ok) {
-        throw new Error("Unable to retrieve this GitHub profile. Please try again.");
+        throw new Error(resolveAnalyzerErrorMessage(profileResponse.status));
       }
 
       const profileData: Profile = await profileResponse.json();
@@ -223,16 +207,28 @@ useEffect(() => {
         `${API_URL}/api/github/users/${encodeURIComponent(cleanUsername)}/skills`
       );
 
+      if (skillsResponse.status === 404) {
+        setError(resolveAnalyzerErrorMessage(404, { username: cleanUsername }));
+        return;
+      }
+
       if (skillsResponse.status === 429) {
-        throw new Error(await rateLimitMessage(skillsResponse));
+        let resetAt: string | undefined;
+        try {
+          const data = await skillsResponse.json();
+          if (data.reset_at) resetAt = data.reset_at;
+        } catch {
+          // ignore
+        }
+        throw new Error(resolveAnalyzerErrorMessage(429, { resetAt }));
       }
 
       if (skillsResponse.status === 502 || skillsResponse.status === 503) {
-        throw new Error("GitHub API is temporarily unavailable. Please try again in a few moments.");
+        throw new Error(resolveAnalyzerErrorMessage(skillsResponse.status));
       }
 
       if (!skillsResponse.ok) {
-        throw new Error("Unable to analyze this profile's skills. Please try again.");
+        throw new Error(resolveAnalyzerErrorMessage(skillsResponse.status));
       }
 
       const skillsData: SkillsData = await skillsResponse.json();
@@ -243,13 +239,7 @@ useEffect(() => {
       fetchMatchedIssues(cleanUsername);
     } catch (err) {
       setCanRetry(true);
-      if (err instanceof TypeError) {
-        setError("Unable to connect to server. Please check your internet connection and ensure the backend is running.");
-      } else if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Something went wrong. Please try again.");
-      }
+      setError(resolveAnalyzerErrorMessage(err));
     } finally {
       setLoading(false);
     }
