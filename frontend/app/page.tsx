@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 
 import GitHubLink from "../components/GitHubLink";
+import SkillChart from "../components/SkillChart";
 import {
   downloadFile,
   generateJsonReport,
@@ -679,16 +680,23 @@ useEffect(() => {
                     </p>
                   </div>
                 ) : (
-                  <div className="mt-8 grid gap-5 sm:grid-cols-2">
+                  <>
+                    <SkillChart
+                      skills={skills.skills}
+                      totalRepositories={skills.total_repositories_analyzed}
+                      theme={theme}
+                      className="mt-8"
+                    />
 
-                    {skills.skills.map((skill) => (
-                      <SkillCard
-                        key={skill.name}
-                        skill={skill}
-                      />
-                    ))}
-
-                  </div>
+                    <div className="mt-8 grid gap-5 sm:grid-cols-2">
+                      {skills.skills.map((skill) => (
+                        <SkillCard
+                          key={skill.name}
+                          skill={skill}
+                        />
+                      ))}
+                    </div>
+                  </>
                 )}
 
               </div>
