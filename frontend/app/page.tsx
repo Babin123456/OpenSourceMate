@@ -1,6 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
-
+import { useEffect, useMemo, useState } from "react";
 import GitHubLink from "../components/GitHubLink";
 import FAQ from "../components/FAQ";
 import {
@@ -99,6 +98,12 @@ useEffect(() => {
   const [loadingMatching, setLoadingMatching] = useState(false);
   const [matchingError, setMatchingError] = useState("");
 
+  // Filters for recommended issues (Issue #47)
+  const [languageFilter, setLanguageFilter] = useState("all");
+  const [labelFilter, setLabelFilter] = useState("all");
+  const [minScoreFilter, setMinScoreFilter] = useState<number>(0);
+  const [searchQuery, setSearchQuery] = useState("");
+
   const [error, setError] = useState("");
   const [lastAnalyzed, setLastAnalyzed] = useState("");
   const [canRetry, setCanRetry] = useState(false);
@@ -158,6 +163,73 @@ useEffect(() => {
         "application/json;charset=utf-8"
       );
     }
+  };
+
+
+  // Dynamic language options extracted from recommendations
+  const availableLanguages = useMemo(() => {
+    const langs = new Set<string>();
+    recommendations.forEach((rec) => {
+      if (rec.language) langs.add(rec.language);
+    });
+    return Array.from(langs).sort();
+  }, [recommendations]);
+
+  // Client-side filtering logic (Issue #47)
+  const filteredRecommendations = useMemo(() => {
+    return recommendations.filter((rec) => {
+      if (
+        languageFilter !== "all" &&
+        rec.language?.toLowerCase() !== languageFilter.toLowerCase()
+      ) {
+        return false;
+      }
+
+      if (labelFilter === "good-first-issue") {
+        const hasGFI = rec.labels?.some((l) =>
+          l.toLowerCase().includes("good first issue")
+        );
+        if (!hasGFI) return false;
+      } else if (labelFilter === "help-wanted") {
+        const hasHW = rec.labels?.some((l) =>
+          l.toLowerCase().includes("help wanted")
+        );
+        if (!hasHW) return false;
+      }
+
+      const score = rec.match_score ?? rec.score ?? 0;
+      if (score < minScoreFilter) {
+        return false;
+      }
+
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const matchesTitle = rec.title?.toLowerCase().includes(q);
+        const matchesRepo = rec.repository?.toLowerCase().includes(q);
+        if (!matchesTitle && !matchesRepo) return false;
+      }
+
+      return true;
+    });
+  }, [
+    recommendations,
+    languageFilter,
+    labelFilter,
+    minScoreFilter,
+    searchQuery,
+  ]);
+
+  const hasActiveFilters =
+    languageFilter !== "all" ||
+    labelFilter !== "all" ||
+    minScoreFilter > 0 ||
+    searchQuery.trim().length > 0;
+
+  const resetFilters = () => {
+    setLanguageFilter("all");
+    setLabelFilter("all");
+    setMinScoreFilter(0);
+    setSearchQuery("");
   };
 
   const analyzeProfile = async (override?: string) => {
@@ -710,7 +782,7 @@ useEffect(() => {
               </div>
             )}
 
-            {/* Recommended Issues Section (Issue #40) */}
+            {/* Recommendations Section with Filters (Issues #40, #47) */}
             <div id="recommendations" className="mt-6 rounded-3xl border border-purple-500/20 bg-white/[0.035] p-6 sm:p-8">
               <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
                 <div>
@@ -729,10 +801,90 @@ useEffect(() => {
 
                 {recommendations.length > 0 && (
                   <div className="text-xs text-gray-500">
-                    {recommendations.length} {recommendations.length === 1 ? "issue" : "issues"} recommended
+                    Showing {filteredRecommendations.length} of {recommendations.length} issues
                   </div>
                 )}
               </div>
+
+              {/* Filters Bar (Issue #47) */}
+              {!loadingMatching && recommendations.length > 0 && (
+                <div className="mt-6 rounded-2xl border border-white/5 bg-black/30 p-4 sm:p-5">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        placeholder="Search issue title or repository..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs text-white outline-none placeholder:text-gray-500 focus:border-purple-400/50 sm:text-sm"
+                      />
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      {availableLanguages.length > 0 && (
+                        <select
+                          value={languageFilter}
+                          onChange={(e) => setLanguageFilter(e.target.value)}
+                          className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-gray-200 outline-none hover:bg-white/10 sm:text-sm"
+                        >
+                          <option value="all" className="bg-[#0f121d] text-white">
+                            All Languages
+                          </option>
+                          {availableLanguages.map((lang) => (
+                            <option key={lang} value={lang} className="bg-[#0f121d] text-white">
+                              {lang}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+
+                      <select
+                        value={labelFilter}
+                        onChange={(e) => setLabelFilter(e.target.value)}
+                        className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-gray-200 outline-none hover:bg-white/10 sm:text-sm"
+                      >
+                        <option value="all" className="bg-[#0f121d] text-white">
+                          All Issue Types
+                        </option>
+                        <option value="good-first-issue" className="bg-[#0f121d] text-white">
+                          Good First Issue
+                        </option>
+                        <option value="help-wanted" className="bg-[#0f121d] text-white">
+                          Help Wanted
+                        </option>
+                      </select>
+
+                      <select
+                        value={minScoreFilter}
+                        onChange={(e) => setMinScoreFilter(Number(e.target.value))}
+                        className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-gray-200 outline-none hover:bg-white/10 sm:text-sm"
+                      >
+                        <option value="0" className="bg-[#0f121d] text-white">
+                          All Scores
+                        </option>
+                        <option value="40" className="bg-[#0f121d] text-white">
+                          40%+ Match
+                        </option>
+                        <option value="60" className="bg-[#0f121d] text-white">
+                          60%+ Match
+                        </option>
+                        <option value="75" className="bg-[#0f121d] text-white">
+                          75%+ Match
+                        </option>
+                      </select>
+
+                      {hasActiveFilters && (
+                        <button
+                          onClick={resetFilters}
+                          className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-purple-300 transition hover:bg-white/10 hover:text-white"
+                        >
+                          Reset Filters
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Loading State */}
               {loadingMatching && (
@@ -749,6 +901,19 @@ useEffect(() => {
                 </div>
               )}
 
+              {/* Filtered 0 results */}
+              {!loadingMatching && !matchingError && recommendations.length > 0 && filteredRecommendations.length === 0 && (
+                <div className="mt-8 rounded-2xl border border-dashed border-white/10 p-10 text-center">
+                  <p className="text-sm text-gray-400">No issues match the selected filters.</p>
+                  <button
+                    onClick={resetFilters}
+                    className="mt-3 rounded-xl bg-white/5 px-4 py-2 text-xs text-white hover:bg-white/10"
+                  >
+                    Clear Filters
+                  </button>
+                </div>
+              )}
+
               {/* Empty State */}
               {!loadingMatching && !matchingError && recommendations.length === 0 && (
                 <div className="mt-8 rounded-2xl border border-dashed border-white/10 p-10 text-center">
@@ -759,9 +924,9 @@ useEffect(() => {
               )}
 
               {/* Issue list */}
-              {!loadingMatching && recommendations.length > 0 && (
+              {!loadingMatching && filteredRecommendations.length > 0 && (
                 <div className="mt-6 space-y-4">
-                  {recommendations.map((issue) => (
+                  {filteredRecommendations.map((issue) => (
                     <IssueCard key={issue.id} issue={issue} />
                   ))}
                 </div>
