@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import GitHubLink from "../components/GitHubLink";
+import SavedIssuesModal from "../components/SavedIssuesModal";
+import { useBookmarkedIssues } from "../hooks/useBookmarkedIssues";
 import FAQ from "../components/FAQ";
 import {
   downloadFile,
@@ -107,6 +109,8 @@ useEffect(() => {
   const [error, setError] = useState("");
   const [lastAnalyzed, setLastAnalyzed] = useState("");
   const [canRetry, setCanRetry] = useState(false);
+  const [isSavedOpen, setIsSavedOpen] = useState(false);
+  const { bookmarks, removeBookmark, clearBookmarks } = useBookmarkedIssues();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const fetchMatchedIssues = async (targetUsername: string) => {
@@ -389,6 +393,12 @@ useEffect(() => {
               FAQ
             </a>
 
+            <button
+              onClick={() => setIsSavedOpen(true)}
+              className="flex items-center gap-1.5 rounded-full border border-purple-500/20 bg-purple-500/10 px-3 py-1 text-xs font-medium text-purple-300 transition hover:bg-purple-500/20 hover:text-white"
+            >
+              <span>★</span> Saved {bookmarks.length > 0 && `(${bookmarks.length})`}
+            </button>
             <GitHubLink className="transition hover:text-white"/>
             <button
   type="button"
@@ -1063,6 +1073,13 @@ useEffect(() => {
         </div>
       </footer>
 
+    <SavedIssuesModal
+        isOpen={isSavedOpen}
+        onClose={() => setIsSavedOpen(false)}
+        bookmarks={bookmarks}
+        onRemove={removeBookmark}
+        onClear={clearBookmarks}
+      />
     </main>
   );
 }
