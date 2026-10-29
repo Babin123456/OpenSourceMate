@@ -1,7 +1,8 @@
 "use client";
-import { useEffect, useState } from "react";
-
+import { useEffect, useMemo, useState } from "react";
 import GitHubLink from "../components/GitHubLink";
+import SavedIssuesModal from "../components/SavedIssuesModal";
+import { useBookmarkedIssues } from "../hooks/useBookmarkedIssues";
 import FAQ from "../components/FAQ";
 import {
   downloadFile,
@@ -9,6 +10,10 @@ import {
   generateMarkdownReport,
   type ExportPayload,
 } from "../utils/exportAnalysis";
+import {
+  validateGitHubUsername,
+  resolveAnalyzerErrorMessage,
+} from "../utils/validation";
 
 type Profile = {
   username: string;
@@ -42,33 +47,14 @@ type Recommendation = {
   score?: number;
   match_reasons?: string[];
   reasons?: string[];
+  explanation?: string;
+  is_ai_generated?: boolean;
 };
 
 type SkillsData = {
   skills: Skill[];
   total_repositories_analyzed: number;
 };
-
-async function rateLimitMessage(response: Response): Promise<string> {
-  let resetAt: Date | null = null;
-
-  try {
-    const data = await response.json();
-    if (data.reset_at) resetAt = new Date(data.reset_at);
-  } catch {
-    // Body was not JSON, use the generic text below.
-  }
-
-  if (resetAt && !Number.isNaN(resetAt.getTime())) {
-    const time = resetAt.toLocaleTimeString([], {
-      hour: "numeric",
-      minute: "2-digit",
-    });
-    return `GitHub rate limit reached, try again at ${time}.`;
-  }
-
-  return "GitHub API rate limit reached. Please try again in a few minutes.";
-}
 
 export default function Home() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -112,6 +98,12 @@ export default function Home() {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [loadingMatching, setLoadingMatching] = useState(false);
   const [matchingError, setMatchingError] = useState("");
+
+  // Filters for recommended issues (Issue #47)
+  const [languageFilter, setLanguageFilter] = useState("all");
+  const [labelFilter, setLabelFilter] = useState("all");
+  const [minScoreFilter, setMinScoreFilter] = useState<number>(0);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [error, setError] = useState("");
   const [lastAnalyzed, setLastAnalyzed] = useState("");
@@ -173,23 +165,83 @@ export default function Home() {
     }
   };
 
+
+  // Dynamic language options extracted from recommendations
+  const availableLanguages = useMemo(() => {
+    const langs = new Set<string>();
+    recommendations.forEach((rec) => {
+      if (rec.language) langs.add(rec.language);
+    });
+    return Array.from(langs).sort();
+  }, [recommendations]);
+
+  // Client-side filtering logic (Issue #47)
+  const filteredRecommendations = useMemo(() => {
+    return recommendations.filter((rec) => {
+      if (
+        languageFilter !== "all" &&
+        rec.language?.toLowerCase() !== languageFilter.toLowerCase()
+      ) {
+        return false;
+      }
+
+      if (labelFilter === "good-first-issue") {
+        const hasGFI = rec.labels?.some((l) =>
+          l.toLowerCase().includes("good first issue")
+        );
+        if (!hasGFI) return false;
+      } else if (labelFilter === "help-wanted") {
+        const hasHW = rec.labels?.some((l) =>
+          l.toLowerCase().includes("help wanted")
+        );
+        if (!hasHW) return false;
+      }
+
+      const score = rec.match_score ?? rec.score ?? 0;
+      if (score < minScoreFilter) {
+        return false;
+      }
+
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const matchesTitle = rec.title?.toLowerCase().includes(q);
+        const matchesRepo = rec.repository?.toLowerCase().includes(q);
+        if (!matchesTitle && !matchesRepo) return false;
+      }
+
+      return true;
+    });
+  }, [
+    recommendations,
+    languageFilter,
+    labelFilter,
+    minScoreFilter,
+    searchQuery,
+  ]);
+
+  const hasActiveFilters =
+    languageFilter !== "all" ||
+    labelFilter !== "all" ||
+    minScoreFilter > 0 ||
+    searchQuery.trim().length > 0;
+
+  const resetFilters = () => {
+    setLanguageFilter("all");
+    setLabelFilter("all");
+    setMinScoreFilter(0);
+    setSearchQuery("");
+  };
+
   const analyzeProfile = async (override?: string) => {
-    const cleanUsername = (override ?? username).trim().replace(/^@/, "");
+    const raw = override ?? username;
+    const validation = validateGitHubUsername(raw);
 
-    if (!cleanUsername) {
-      setError("Please enter a GitHub username.");
+    if (!validation.isValid) {
+      setError(validation.error || "Please enter a valid GitHub username.");
       return;
     }
 
-    const usernamePattern =
-      /^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/;
-
-    if (!usernamePattern.test(cleanUsername)) {
-      setError(
-        "Invalid GitHub username. Use up to 39 letters, numbers, or single hyphens; don't start or end with a hyphen."
-      );
-      return;
-    }
+    const cleanUsername = validation.cleanUsername;
 
     if (loading) return;
 
@@ -215,21 +267,28 @@ export default function Home() {
         `${API_URL}/api/github/users/${encodeURIComponent(cleanUsername)}`
       );
 
-      if (profileResponse.status === 429) {
-        throw new Error(await rateLimitMessage(profileResponse));
-      }
-
-      if (profileResponse.status === 502 || profileResponse.status === 503) {
-        throw new Error("GitHub API is temporarily unavailable. Please try again in a few moments.");
-      }
-
       if (profileResponse.status === 404) {
-        setError("GitHub user not found. Check the username and try again.");
+        setError(resolveAnalyzerErrorMessage(404, { username: cleanUsername }));
         return;
       }
 
+      if (profileResponse.status === 429) {
+        let resetAt: string | undefined;
+        try {
+          const data = await profileResponse.json();
+          if (data.reset_at) resetAt = data.reset_at;
+        } catch {
+          // ignore
+        }
+        throw new Error(resolveAnalyzerErrorMessage(429, { resetAt }));
+      }
+
+      if (profileResponse.status === 502 || profileResponse.status === 503) {
+        throw new Error(resolveAnalyzerErrorMessage(profileResponse.status));
+      }
+
       if (!profileResponse.ok) {
-        throw new Error("Unable to retrieve this GitHub profile. Please try again.");
+        throw new Error(resolveAnalyzerErrorMessage(profileResponse.status));
       }
 
       const profileData: Profile = await profileResponse.json();
@@ -238,16 +297,28 @@ export default function Home() {
         `${API_URL}/api/github/users/${encodeURIComponent(cleanUsername)}/skills`
       );
 
+      if (skillsResponse.status === 404) {
+        setError(resolveAnalyzerErrorMessage(404, { username: cleanUsername }));
+        return;
+      }
+
       if (skillsResponse.status === 429) {
-        throw new Error(await rateLimitMessage(skillsResponse));
+        let resetAt: string | undefined;
+        try {
+          const data = await skillsResponse.json();
+          if (data.reset_at) resetAt = data.reset_at;
+        } catch {
+          // ignore
+        }
+        throw new Error(resolveAnalyzerErrorMessage(429, { resetAt }));
       }
 
       if (skillsResponse.status === 502 || skillsResponse.status === 503) {
-        throw new Error("GitHub API is temporarily unavailable. Please try again in a few moments.");
+        throw new Error(resolveAnalyzerErrorMessage(skillsResponse.status));
       }
 
       if (!skillsResponse.ok) {
-        throw new Error("Unable to analyze this profile's skills. Please try again.");
+        throw new Error(resolveAnalyzerErrorMessage(skillsResponse.status));
       }
 
       const skillsData: SkillsData = await skillsResponse.json();
@@ -258,13 +329,7 @@ export default function Home() {
       fetchMatchedIssues(cleanUsername);
     } catch (err) {
       setCanRetry(true);
-      if (err instanceof TypeError) {
-        setError("Unable to connect to server. Please check your internet connection and ensure the backend is running.");
-      } else if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Something went wrong. Please try again.");
-      }
+      setError(resolveAnalyzerErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -1253,6 +1318,22 @@ function IssueCard({
                   </span>
                 );
               })}
+            </div>
+          )}
+
+          {issue.explanation && (
+            <div className="mt-3.5 rounded-xl border border-purple-500/20 bg-purple-500/5 p-3.5 text-xs">
+              <div className="flex items-center gap-1.5 font-semibold text-purple-300">
+                <span>{issue.is_ai_generated ? "✦ AI Match Grounding" : "🎯 Why this issue matches you"}</span>
+                {issue.is_ai_generated && (
+                  <span className="rounded-full border border-purple-400/30 bg-purple-400/10 px-2 py-0.5 text-[10px] font-medium text-purple-200">
+                    AI Guided
+                  </span>
+                )}
+              </div>
+              <p className="mt-1 text-gray-300 leading-relaxed">
+                {issue.explanation}
+              </p>
             </div>
           )}
 
