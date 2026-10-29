@@ -47,6 +47,8 @@ type Recommendation = {
   score?: number;
   match_reasons?: string[];
   reasons?: string[];
+  explanation?: string;
+  is_ai_generated?: boolean;
 };
 
 type SkillsData = {
@@ -1216,9 +1218,25 @@ function IssueCard({
             </div>
           )}
 
+          {issue.explanation && (
+            <div className="mt-3.5 rounded-xl border border-purple-500/20 bg-purple-500/5 p-3.5 text-xs">
+              <div className="flex items-center gap-1.5 font-semibold text-purple-300">
+                <span>{issue.is_ai_generated ? "✦ AI Match Grounding" : "🎯 Why this issue matches you"}</span>
+                {issue.is_ai_generated && (
+                  <span className="rounded-full border border-purple-400/30 bg-purple-400/10 px-2 py-0.5 text-[10px] font-medium text-purple-200">
+                    AI Guided
+                  </span>
+                )}
+              </div>
+              <p className="mt-1 text-gray-300 leading-relaxed">
+                {issue.explanation}
+              </p>
+            </div>
+          )}
+
           {reasons.length > 0 && (
-            <div className="mt-4 rounded-xl border border-white/5 bg-white/[0.02] p-3 text-xs text-gray-400">
-              <p className="font-medium text-gray-300">Why this matches:</p>
+            <div className="mt-3 rounded-xl border border-white/5 bg-white/[0.02] p-3 text-xs text-gray-400">
+              <p className="font-medium text-gray-300">Key signals:</p>
               <ul className="mt-1.5 space-y-1">
                 {reasons.map((reason, i) => (
                   <li key={i} className="flex items-center gap-1.5">
