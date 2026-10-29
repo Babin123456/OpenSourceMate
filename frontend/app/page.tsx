@@ -1,9 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import GitHubLink from "../components/GitHubLink";
-import SavedIssuesModal from "../components/SavedIssuesModal";
-import { useBookmarkedIssues } from "../hooks/useBookmarkedIssues";
-import FAQ from "../components/FAQ";
+import SkillChart from "../components/SkillChart";
 import {
   downloadFile,
   generateJsonReport,
@@ -748,88 +746,31 @@ export default function Home() {
                   )}
                 </div>
 
-                {/* Profile Card */}
-                {profile && (
-                  <div
-                    className={`overflow-hidden rounded-3xl border ${
-                      theme === "dark"
-                        ? "border-white/10 bg-white/[0.035]"
-                        : "border-gray-200 bg-white shadow-sm"
-                    }`}
-                  >
-                    <div className="p-5 sm:p-8">
-                      <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
-                          <img
-                            src={profile.avatar_url}
-                            alt={`${profile.name || profile.username}'s GitHub avatar`}
-                            width={96}
-                            height={96}
-                            className="h-20 w-20 rounded-2xl border border-white/10 object-cover sm:h-24 sm:w-24"
-                          />
-
-                          <div>
-                            <h3 className="text-xl font-bold sm:text-2xl">
-                              {profile.name || profile.username}
-                            </h3>
-
-                            <p
-                              className={`mt-1 text-sm ${
-                                theme === "dark" ? "text-gray-400" : "text-gray-600"
-                              }`}
-                            >
-                              @{profile.username}
-                            </p>
-
-                            {profile.bio && (
-                              <p
-                                className={`mt-3 max-w-xl text-sm leading-6 ${
-                                  theme === "dark" ? "text-gray-300" : "text-gray-700"
-                                }`}
-                              >
-                                {profile.bio}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-
-                        <a
-                          href={profile.profile_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          aria-label={`View ${profile.username}'s profile on GitHub (opens in a new tab)`}
-                          className={`rounded-xl border px-4 py-2.5 text-center text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 ${
-                            theme === "dark"
-                              ? "border-white/10 bg-white/5 text-gray-200 hover:bg-white/10"
-                              : "border-gray-300 bg-gray-100 text-gray-800 hover:bg-gray-200"
-                          }`}
-                        >
-                          View GitHub ↗
-                        </a>
-                      </div>
-
-                      {/* Stats */}
-                      <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                        <StatCard
-                          value={profile.public_repositories}
-                          label="Repositories"
-                          theme={theme}
-                        />
-
-                        <StatCard
-                          value={profile.followers}
-                          label="Followers"
-                          theme={theme}
-                        />
-
-                        <StatCard
-                          value={profile.following}
-                          label="Following"
-                          theme={theme}
-                        />
-                      </div>
-                    </div>
+                {skills.skills.length === 0 ? (
+                  <div className="mt-8 rounded-2xl border border-dashed border-white/10 p-8 text-center">
+                    <p className="text-gray-400">
+                      No public repositories with a language were found for this
+                      profile, so there are no skills to show yet.
+                    </p>
                   </div>
+                ) : (
+                  <>
+                    <SkillChart
+                      skills={skills.skills}
+                      totalRepositories={skills.total_repositories_analyzed}
+                      theme={theme}
+                      className="mt-8"
+                    />
+
+                    <div className="mt-8 grid gap-5 sm:grid-cols-2">
+                      {skills.skills.map((skill) => (
+                        <SkillCard
+                          key={skill.name}
+                          skill={skill}
+                        />
+                      ))}
+                    </div>
+                  </>
                 )}
 
                 {/* Skills Section */}
