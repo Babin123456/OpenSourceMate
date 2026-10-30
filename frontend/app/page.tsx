@@ -2,6 +2,22 @@
 import { useEffect, useMemo, useState } from "react";
 import GitHubLink from "../components/GitHubLink";
 import RecentSearches from "../components/RecentSearches";
+import SkillChart from "../components/SkillChart";
+import {
+  type GitHubUserProfile as Profile,
+  type SkillItem as Skill,
+  type UserSkillsResponse as SkillsData,
+  type IssueRecommendation as Recommendation,
+} from "../types/api";
+import {
+  fetchUserProfile,
+  fetchUserSkills,
+  fetchMatchedIssues as apiFetchMatchedIssues,
+  createSearchSignal,
+  cancelPendingSearch,
+  isAbortError,
+  ApiClientError,
+} from "../utils/apiClient";
 import {
   downloadFile,
   generateJsonReport,
@@ -14,50 +30,12 @@ import {
   removeRecentSearch,
   clearRecentSearches,
 } from "../utils/recentSearches";
-
-type Profile = {
-  username: string;
-  name: string | null;
-  bio: string | null;
-  avatar_url: string;
-  public_repositories: number;
-  followers: number;
-  following: number;
-  profile_url: string;
-};
-
-type Skill = {
-  name: string;
-  repository_count: number;
-  percentage: number;
-};
-
-type Recommendation = {
-  id: number;
-  title: string;
-  repository: string;
-  url: string;
-  state: string;
-  labels: string[];
-  comments: number;
-  created_at: string;
-  updated_at: string;
-  language?: string;
-  match_score?: number;
-  score?: number;
-  match_reasons?: string[];
-  reasons?: string[];
-  explanation?: string;
-  is_ai_generated?: boolean;
-};
-
-type SkillsData = {
-  skills: Skill[];
-  total_repositories_analyzed: number;
-};
+import {
+  validateGitHubUsername,
+  resolveAnalyzerErrorMessage,
+} from "../utils/validation";
 
 export default function Home() {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   const [theme, setTheme] = useState<"dark" | "light">("dark");
 
   useEffect(() => {
@@ -108,7 +86,6 @@ export default function Home() {
   const [error, setError] = useState("");
   const [lastAnalyzed, setLastAnalyzed] = useState("");
   const [canRetry, setCanRetry] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
   useEffect(() => {
@@ -134,23 +111,21 @@ export default function Home() {
     setRecentSearches([]);
   };
 
-  const fetchMatchedIssues = async (targetUsername: string) => {
+  useEffect(() => {
+    return () => {
+      cancelPendingSearch();
+    };
+  }, []);
+
+  const fetchMatchedIssues = async (targetUsername: string, signal?: AbortSignal) => {
     setLoadingMatching(true);
     setMatchingError("");
 
     try {
-      const matchResponse = await fetch(
-        `${API_URL}/api/matching/users/${encodeURIComponent(targetUsername)}/issues`
-      );
-
-      if (!matchResponse.ok) {
-        setMatchingError("Unable to load recommended issues right now.");
-        return;
-      }
-
-      const matchData = await matchResponse.json();
+      const matchData = await apiFetchMatchedIssues(targetUsername, { signal });
       setRecommendations(matchData.recommendations || []);
-    } catch {
+    } catch (err: unknown) {
+      if (isAbortError(err)) return;
       setMatchingError("Unable to load recommended issues. Please try again later.");
     } finally {
       setLoadingMatching(false);
@@ -283,70 +258,11 @@ export default function Home() {
       setRecommendations([]);
     }
 
+    const searchSignal = createSearchSignal();
+
     try {
-      if (!API_URL) {
-        throw new Error("The analyzer is not configured right now. Please try again later.");
-      }
-
-      const profileResponse = await fetch(
-        `${API_URL}/api/github/users/${encodeURIComponent(cleanUsername)}`
-      );
-
-      if (profileResponse.status === 404) {
-        setError(resolveAnalyzerErrorMessage(404, { username: cleanUsername }));
-        return;
-      }
-
-      if (profileResponse.status === 429) {
-        let resetAt: string | undefined;
-        try {
-          const data = await profileResponse.json();
-          if (data.reset_at) resetAt = data.reset_at;
-        } catch {
-          // ignore
-        }
-        throw new Error(resolveAnalyzerErrorMessage(429, { resetAt }));
-      }
-
-      if (profileResponse.status === 502 || profileResponse.status === 503) {
-        throw new Error(resolveAnalyzerErrorMessage(profileResponse.status));
-      }
-
-      if (!profileResponse.ok) {
-        throw new Error(resolveAnalyzerErrorMessage(profileResponse.status));
-      }
-
-      const profileData: Profile = await profileResponse.json();
-
-      const skillsResponse = await fetch(
-        `${API_URL}/api/github/users/${encodeURIComponent(cleanUsername)}/skills`
-      );
-
-      if (skillsResponse.status === 404) {
-        setError(resolveAnalyzerErrorMessage(404, { username: cleanUsername }));
-        return;
-      }
-
-      if (skillsResponse.status === 429) {
-        let resetAt: string | undefined;
-        try {
-          const data = await skillsResponse.json();
-          if (data.reset_at) resetAt = data.reset_at;
-        } catch {
-          // ignore
-        }
-        throw new Error(resolveAnalyzerErrorMessage(429, { resetAt }));
-      }
-
-      if (skillsResponse.status === 502 || skillsResponse.status === 503) {
-        throw new Error(resolveAnalyzerErrorMessage(skillsResponse.status));
-      }
-
-      if (!skillsResponse.ok) {
-        throw new Error(resolveAnalyzerErrorMessage(skillsResponse.status));
-      }
-
-      const skillsData: SkillsData = await skillsResponse.json();
+      const profileData = await fetchUserProfile(cleanUsername, { signal: searchSignal });
+      const skillsData = await fetchUserSkills(cleanUsername, { signal: searchSignal });
 
       setProfile(profileData);
       setSkills(skillsData);
@@ -355,9 +271,30 @@ export default function Home() {
       const updatedSearches = saveRecentSearch(cleanUsername);
       setRecentSearches(updatedSearches);
 
-      fetchMatchedIssues(cleanUsername);
-    } catch (err) {
+      fetchMatchedIssues(cleanUsername, searchSignal);
+    } catch (err: unknown) {
+      if (isAbortError(err)) {
+        return; // Prior in-flight search was aborted by a new search
+      }
       setCanRetry(true);
+      if (err instanceof ApiClientError) {
+        if (err.status === 404) {
+          setError(resolveAnalyzerErrorMessage(404, { username: cleanUsername }));
+          return;
+        }
+        if (err.status === 429) {
+          setError(resolveAnalyzerErrorMessage(429, { resetAt: err.resetAt }));
+          return;
+        }
+        if (err.status === 502 || err.status === 503 || err.status === 504) {
+          setError(resolveAnalyzerErrorMessage(err.status));
+          return;
+        }
+        if (err.code === "NETWORK_ERROR" || err.status === 0) {
+          setError(resolveAnalyzerErrorMessage(new TypeError(err.message)));
+          return;
+        }
+      }
       setError(resolveAnalyzerErrorMessage(err));
     } finally {
       setLoading(false);
@@ -505,17 +442,8 @@ export default function Home() {
             </div>
           </nav>
 
-            <RecentSearches
-              searches={recentSearches}
-              onSelect={handleSelectRecent}
-              onRemove={handleRemoveRecent}
-              onClear={handleClearRecent}
-              theme={theme}
-            />
-
-          </div>
-
-          {error && (
+          {/* Mobile dropdown menu */}
+          {mobileMenuOpen && (
             <div
               id="mobile-navigation"
               role="region"
@@ -676,6 +604,14 @@ export default function Home() {
                   </button>
                 </div>
 
+                <RecentSearches
+                  searches={recentSearches}
+                  onSelect={handleSelectRecent}
+                  onRemove={handleRemoveRecent}
+                  onClear={handleClearRecent}
+                  theme={theme}
+                />
+
                 <span id="username-hint" className="sr-only">
                   Provide a public GitHub username to analyze technical skills and receive matched issues.
                 </span>
@@ -786,31 +722,59 @@ export default function Home() {
                   )}
                 </div>
 
-                {skills.skills.length === 0 ? (
-                  <div className="mt-8 rounded-2xl border border-dashed border-white/10 p-8 text-center">
-                    <p className="text-gray-400">
-                      No public repositories with a language were found for this
-                      profile, so there are no skills to show yet.
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    <SkillChart
-                      skills={skills.skills}
-                      totalRepositories={skills.total_repositories_analyzed}
-                      theme={theme}
-                      className="mt-8"
-                    />
-
-                    <div className="mt-8 grid gap-5 sm:grid-cols-2">
-                      {skills.skills.map((skill) => (
-                        <SkillCard
-                          key={skill.name}
-                          skill={skill}
+                {profile && (
+                  <div
+                    className={`mt-8 rounded-3xl border p-6 sm:p-8 ${
+                      theme === "dark"
+                        ? "border-white/10 bg-white/[0.035]"
+                        : "border-gray-200 bg-white shadow-sm"
+                    }`}
+                  >
+                    <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex items-center gap-4">
+                        <img
+                          src={profile.avatar_url}
+                          alt={profile.username}
+                          className="h-20 w-20 rounded-2xl border border-white/10 object-cover sm:h-24 sm:w-24"
                         />
-                      ))}
+                        <div>
+                          <h3 className="text-xl font-bold sm:text-2xl">
+                            {profile.name || profile.username}
+                          </h3>
+                          <p className={`mt-1 text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
+                            @{profile.username}
+                          </p>
+                          {profile.bio && (
+                            <p className={`mt-3 max-w-xl text-sm leading-6 ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
+                              {profile.bio}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <a
+                        href={profile.profile_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10"
+                      >
+                        View on GitHub ↗
+                      </a>
                     </div>
-                  </>
+                    <div className="mt-6 grid grid-cols-3 gap-3 border-t border-white/5 pt-6 text-center">
+                      <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-4">
+                        <div className="text-2xl font-bold">{profile.public_repositories}</div>
+                        <div className="mt-1 text-xs text-gray-400">Repositories</div>
+                      </div>
+                      <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-4">
+                        <div className="text-2xl font-bold">{profile.followers}</div>
+                        <div className="mt-1 text-xs text-gray-400">Followers</div>
+                      </div>
+                      <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-4">
+                        <div className="text-2xl font-bold">{profile.following}</div>
+                        <div className="mt-1 text-xs text-gray-400">Following</div>
+                      </div>
+                    </div>
+                  </div>
                 )}
 
                 {/* Skills Section */}
@@ -866,15 +830,23 @@ export default function Home() {
                         </p>
                       </div>
                     ) : (
-                      <div className="mt-8 grid gap-4 sm:grid-cols-2 sm:gap-5">
-                        {skills.skills.map((skill) => (
-                          <SkillCard
-                            key={skill.name}
-                            skill={skill}
-                            theme={theme}
-                          />
-                        ))}
-                      </div>
+                      <>
+                        <SkillChart
+                          skills={skills.skills}
+                          totalRepositories={skills.total_repositories_analyzed}
+                          theme={theme}
+                          className="mt-8"
+                        />
+                        <div className="mt-8 grid gap-4 sm:grid-cols-2 sm:gap-5">
+                          {skills.skills.map((skill) => (
+                            <SkillCard
+                              key={skill.name}
+                              skill={skill}
+                              theme={theme}
+                            />
+                          ))}
+                        </div>
+                      </>
                     )}
                   </div>
                 )}
