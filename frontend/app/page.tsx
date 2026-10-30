@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import GitHubLink from "../components/GitHubLink";
-import SkillChart from "../components/SkillChart";
+import RecentSearches from "../components/RecentSearches";
 import {
   downloadFile,
   generateJsonReport,
@@ -9,9 +9,11 @@ import {
   type ExportPayload,
 } from "../utils/exportAnalysis";
 import {
-  validateGitHubUsername,
-  resolveAnalyzerErrorMessage,
-} from "../utils/validation";
+  getRecentSearches,
+  saveRecentSearch,
+  removeRecentSearch,
+  clearRecentSearches,
+} from "../utils/recentSearches";
 
 type Profile = {
   username: string;
@@ -106,6 +108,31 @@ export default function Home() {
   const [error, setError] = useState("");
   const [lastAnalyzed, setLastAnalyzed] = useState("");
   const [canRetry, setCanRetry] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setRecentSearches(getRecentSearches());
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleSelectRecent = (recentUser: string) => {
+    setUsername(recentUser);
+    analyzeProfile(recentUser);
+  };
+
+  const handleRemoveRecent = (recentUser: string) => {
+    const updated = removeRecentSearch(recentUser);
+    setRecentSearches(updated);
+  };
+
+  const handleClearRecent = () => {
+    clearRecentSearches();
+    setRecentSearches([]);
+  };
 
   const fetchMatchedIssues = async (targetUsername: string) => {
     setLoadingMatching(true);
@@ -324,6 +351,10 @@ export default function Home() {
       setProfile(profileData);
       setSkills(skillsData);
 
+      // Save to recent searches on successful analysis
+      const updatedSearches = saveRecentSearch(cleanUsername);
+      setRecentSearches(updatedSearches);
+
       fetchMatchedIssues(cleanUsername);
     } catch (err) {
       setCanRetry(true);
@@ -474,8 +505,17 @@ export default function Home() {
             </div>
           </nav>
 
-          {/* Mobile dropdown menu */}
-          {mobileMenuOpen && (
+            <RecentSearches
+              searches={recentSearches}
+              onSelect={handleSelectRecent}
+              onRemove={handleRemoveRecent}
+              onClear={handleClearRecent}
+              theme={theme}
+            />
+
+          </div>
+
+          {error && (
             <div
               id="mobile-navigation"
               role="region"
