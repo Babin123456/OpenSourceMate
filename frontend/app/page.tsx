@@ -1,11 +1,12 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
+import ExportMenu from "../components/ExportMenu";
 import GitHubLink from "../components/GitHubLink";
 import RecentSearches from "../components/RecentSearches";
+import SkillChart from "../components/SkillChart";
 import {
-  downloadFile,
-  generateJsonReport,
-  generateMarkdownReport,
+  exportAnalysisData,
+  type ExportFormat,
   type ExportPayload,
 } from "../utils/exportAnalysis";
 import {
@@ -14,6 +15,10 @@ import {
   removeRecentSearch,
   clearRecentSearches,
 } from "../utils/recentSearches";
+import {
+  validateGitHubUsername,
+  resolveAnalyzerErrorMessage,
+} from "../utils/validation";
 
 type Profile = {
   username: string;
@@ -108,7 +113,6 @@ export default function Home() {
   const [error, setError] = useState("");
   const [lastAnalyzed, setLastAnalyzed] = useState("");
   const [canRetry, setCanRetry] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
   useEffect(() => {
@@ -157,7 +161,7 @@ export default function Home() {
     }
   };
 
-  const handleExport = (format: "markdown" | "json") => {
+  const handleExport = (format: ExportFormat) => {
     if (!profile) return;
 
     const payload: ExportPayload = {
@@ -173,21 +177,7 @@ export default function Home() {
       exportedAt: new Date().toISOString().split("T")[0],
     };
 
-    if (format === "markdown") {
-      const content = generateMarkdownReport(payload);
-      downloadFile(
-        content,
-        `opensourcemate-${profile.username}-analysis.md`,
-        "text/markdown;charset=utf-8"
-      );
-    } else {
-      const content = generateJsonReport(payload);
-      downloadFile(
-        content,
-        `opensourcemate-${profile.username}-analysis.json`,
-        "application/json;charset=utf-8"
-      );
-    }
+    exportAnalysisData(payload, format);
   };
 
 
@@ -505,17 +495,8 @@ export default function Home() {
             </div>
           </nav>
 
-            <RecentSearches
-              searches={recentSearches}
-              onSelect={handleSelectRecent}
-              onRemove={handleRemoveRecent}
-              onClear={handleClearRecent}
-              theme={theme}
-            />
-
-          </div>
-
-          {error && (
+          {/* Mobile dropdown menu */}
+          {mobileMenuOpen && (
             <div
               id="mobile-navigation"
               role="region"
@@ -676,6 +657,14 @@ export default function Home() {
                   </button>
                 </div>
 
+                <RecentSearches
+                  searches={recentSearches}
+                  onSelect={handleSelectRecent}
+                  onRemove={handleRemoveRecent}
+                  onClear={handleClearRecent}
+                  theme={theme}
+                />
+
                 <span id="username-hint" className="sr-only">
                   Provide a public GitHub username to analyze technical skills and receive matched issues.
                 </span>
@@ -757,60 +746,63 @@ export default function Home() {
                   </div>
 
                   {profile && (
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleExport("markdown")}
-                        className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 ${
-                          theme === "dark"
-                            ? "border-white/10 bg-white/5 text-gray-200 hover:bg-white/10"
-                            : "border-gray-300 bg-white text-gray-800 hover:bg-gray-100"
-                        }`}
-                        title="Export summary as Markdown (.md)"
-                      >
-                        <span>↓</span> Export Markdown
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleExport("json")}
-                        className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 ${
-                          theme === "dark"
-                            ? "border-white/10 bg-white/5 text-gray-200 hover:bg-white/10"
-                            : "border-gray-300 bg-white text-gray-800 hover:bg-gray-100"
-                        }`}
-                        title="Export raw data as JSON (.json)"
-                      >
-                        <span>↓</span> Export JSON
-                      </button>
-                    </div>
+                    <ExportMenu onExport={handleExport} />
                   )}
                 </div>
 
-                {skills.skills.length === 0 ? (
-                  <div className="mt-8 rounded-2xl border border-dashed border-white/10 p-8 text-center">
-                    <p className="text-gray-400">
-                      No public repositories with a language were found for this
-                      profile, so there are no skills to show yet.
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    <SkillChart
-                      skills={skills.skills}
-                      totalRepositories={skills.total_repositories_analyzed}
-                      theme={theme}
-                      className="mt-8"
-                    />
-
-                    <div className="mt-8 grid gap-5 sm:grid-cols-2">
-                      {skills.skills.map((skill) => (
-                        <SkillCard
-                          key={skill.name}
-                          skill={skill}
+                {profile && (
+                  <div
+                    className={`mt-8 rounded-3xl border p-6 sm:p-8 ${
+                      theme === "dark"
+                        ? "border-white/10 bg-white/[0.035]"
+                        : "border-gray-200 bg-white shadow-sm"
+                    }`}
+                  >
+                    <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex items-center gap-4">
+                        <img
+                          src={profile.avatar_url}
+                          alt={profile.username}
+                          className="h-20 w-20 rounded-2xl border border-white/10 object-cover sm:h-24 sm:w-24"
                         />
-                      ))}
+                        <div>
+                          <h3 className="text-xl font-bold sm:text-2xl">
+                            {profile.name || profile.username}
+                          </h3>
+                          <p className={`mt-1 text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
+                            @{profile.username}
+                          </p>
+                          {profile.bio && (
+                            <p className={`mt-3 max-w-xl text-sm leading-6 ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
+                              {profile.bio}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <a
+                        href={profile.profile_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10"
+                      >
+                        View on GitHub ↗
+                      </a>
                     </div>
-                  </>
+                    <div className="mt-6 grid grid-cols-3 gap-3 border-t border-white/5 pt-6 text-center">
+                      <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-4">
+                        <div className="text-2xl font-bold">{profile.public_repositories}</div>
+                        <div className="mt-1 text-xs text-gray-400">Repositories</div>
+                      </div>
+                      <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-4">
+                        <div className="text-2xl font-bold">{profile.followers}</div>
+                        <div className="mt-1 text-xs text-gray-400">Followers</div>
+                      </div>
+                      <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-4">
+                        <div className="text-2xl font-bold">{profile.following}</div>
+                        <div className="mt-1 text-xs text-gray-400">Following</div>
+                      </div>
+                    </div>
+                  </div>
                 )}
 
                 {/* Skills Section */}
@@ -866,15 +858,23 @@ export default function Home() {
                         </p>
                       </div>
                     ) : (
-                      <div className="mt-8 grid gap-4 sm:grid-cols-2 sm:gap-5">
-                        {skills.skills.map((skill) => (
-                          <SkillCard
-                            key={skill.name}
-                            skill={skill}
-                            theme={theme}
-                          />
-                        ))}
-                      </div>
+                      <>
+                        <SkillChart
+                          skills={skills.skills}
+                          totalRepositories={skills.total_repositories_analyzed}
+                          theme={theme}
+                          className="mt-8"
+                        />
+                        <div className="mt-8 grid gap-4 sm:grid-cols-2 sm:gap-5">
+                          {skills.skills.map((skill) => (
+                            <SkillCard
+                              key={skill.name}
+                              skill={skill}
+                              theme={theme}
+                            />
+                          ))}
+                        </div>
+                      </>
                     )}
                   </div>
                 )}
