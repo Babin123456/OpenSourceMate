@@ -26,13 +26,19 @@ async def get_user(username: str):
 
     return {
         "username": user["login"],
-        "name": user["name"],
-        "bio": user["bio"],
+        "name": user.get("name"),
+        "bio": user.get("bio"),
         "avatar_url": user["avatar_url"],
         "public_repositories": user["public_repos"],
         "followers": user["followers"],
         "following": user["following"],
         "profile_url": user["html_url"],
+        "location": user.get("location"),
+        "company": user.get("company"),
+        "blog": user.get("blog"),
+        "twitter_username": user.get("twitter_username"),
+        "created_at": user.get("created_at"),
+        "public_gists": user.get("public_gists", 0),
     }
 
 
