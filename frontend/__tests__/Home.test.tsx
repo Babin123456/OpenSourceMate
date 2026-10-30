@@ -96,7 +96,7 @@ describe("Analyze Flow - Home Component", () => {
     fireEvent.click(analyzeBtn);
 
     expect(
-      await screen.findByText(/(?:cannot begin with a hyphen|Invalid GitHub username)/i)
+      await screen.findByText(/cannot begin with a hyphen/i)
     ).toBeInTheDocument();
     expect(global.fetch).not.toHaveBeenCalled();
   });
@@ -243,7 +243,7 @@ describe("Analyze Flow - Home Component", () => {
     fireEvent.click(screen.getByRole("button", { name: /Analyze Profile/i }));
 
     expect(
-      await screen.findByText(/GitHub (?:API )?rate limit reached.*try again at/i)
+      await screen.findByText(/rate limit reached.*try again at/i)
     ).toBeInTheDocument();
   });
 
@@ -341,8 +341,8 @@ describe("Analyze Flow - Home Component", () => {
   it("toggles theme between dark and light mode", async () => {
     render(<Home />);
 
-    const themeBtns = screen.getAllByRole("button", { name: /Switch to light mode/i });
-    fireEvent.click(themeBtns[0]);
+    const themeBtn = screen.getAllByRole("button", { name: /Switch to light mode/i })[0];
+    fireEvent.click(themeBtn);
 
     expect(document.documentElement.dataset.theme).toBe("light");
     expect(localStorage.getItem("theme")).toBe("light");
