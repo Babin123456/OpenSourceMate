@@ -92,7 +92,11 @@ async def get_repositories(username: str):
     response_model=UserSkillsSerializer,
     summary="Analyze GitHub user technical skills",
 )
-async def get_user_skills(username: str, include_forks: bool = False):
+async def get_user_skills(
+    username: str,
+    include_forks: bool = False,
+    include_proficiency: bool = True,
+):
     validated_username = validate_github_username(username)
     repositories = await get_user_repositories(validated_username)
 
@@ -104,7 +108,10 @@ async def get_user_skills(username: str, include_forks: bool = False):
 
     details = await get_repository_details(repositories)
     result = analyze_skills(
-        repositories, include_forks=include_forks, repo_details=details
+        repositories,
+        include_forks=include_forks,
+        repo_details=details,
+        compute_proficiency=include_proficiency,
     )
 
     return {
