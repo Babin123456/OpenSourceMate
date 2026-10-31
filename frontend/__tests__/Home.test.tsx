@@ -129,7 +129,8 @@ describe("Analyze Flow - Home Component", () => {
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining("/api/github/users/octocat")
+        expect.stringContaining("/api/github/users/octocat"),
+        expect.any(Object)
       );
     });
   });
@@ -247,7 +248,7 @@ describe("Analyze Flow - Home Component", () => {
   });
 
   it("displays server unavailable message on 502/503 response", async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
+    (global.fetch as jest.Mock).mockResolvedValue({
       ok: false,
       status: 503,
       json: async () => ({ detail: "Service unavailable" }),
@@ -265,9 +266,9 @@ describe("Analyze Flow - Home Component", () => {
   });
 
   it("displays network connectivity error and retry button on TypeError", async () => {
-    (global.fetch as jest.Mock).mockRejectedValueOnce(
-      new TypeError("Failed to fetch")
-    );
+    (global.fetch as jest.Mock)
+      .mockRejectedValueOnce(new TypeError("Failed to fetch"))
+      .mockRejectedValueOnce(new TypeError("Failed to fetch"));
 
     render(<Home />);
 
@@ -331,7 +332,8 @@ describe("Analyze Flow - Home Component", () => {
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining("/api/github/users/octocat")
+        expect.stringContaining("/api/github/users/octocat"),
+        expect.any(Object)
       );
     });
   });

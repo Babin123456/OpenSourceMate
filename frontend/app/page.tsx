@@ -2,12 +2,28 @@
 import { useEffect, useMemo, useState } from "react";
 import ExportMenu from "../components/ExportMenu";
 import GitHubLink from "../components/GitHubLink";
-import ProfileCard, { type Profile } from "../components/ProfileCard";
+import ProfileCard from "../components/ProfileCard";
 import RecentSearches from "../components/RecentSearches";
 import SkillChart from "../components/SkillChart";
 import {
-  exportAnalysisData,
-  type ExportFormat,
+  type GitHubUserProfile as Profile,
+  type SkillItem as Skill,
+  type UserSkillsResponse as SkillsData,
+  type IssueRecommendation as Recommendation,
+} from "../types/api";
+import {
+  fetchUserProfile,
+  fetchUserSkills,
+  fetchMatchedIssues as apiFetchMatchedIssues,
+  createSearchSignal,
+  cancelPendingSearch,
+  isAbortError,
+  ApiClientError,
+} from "../utils/apiClient";
+import {
+  downloadFile,
+  generateJsonReport,
+  generateMarkdownReport,
   type ExportPayload,
 } from "../utils/exportAnalysis";
 import {
@@ -21,38 +37,7 @@ import {
   resolveAnalyzerErrorMessage,
 } from "../utils/validation";
 
-type Skill = {
-  name: string;
-  repository_count: number;
-  percentage: number;
-};
-
-type Recommendation = {
-  id: number;
-  title: string;
-  repository: string;
-  url: string;
-  state: string;
-  labels: string[];
-  comments: number;
-  created_at: string;
-  updated_at: string;
-  language?: string;
-  match_score?: number;
-  score?: number;
-  match_reasons?: string[];
-  reasons?: string[];
-  explanation?: string;
-  is_ai_generated?: boolean;
-};
-
-type SkillsData = {
-  skills: Skill[];
-  total_repositories_analyzed: number;
-};
-
 export default function Home() {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   const [theme, setTheme] = useState<"dark" | "light">("dark");
 
   useEffect(() => {
@@ -128,23 +113,21 @@ export default function Home() {
     setRecentSearches([]);
   };
 
-  const fetchMatchedIssues = async (targetUsername: string) => {
+  useEffect(() => {
+    return () => {
+      cancelPendingSearch();
+    };
+  }, []);
+
+  const fetchMatchedIssues = async (targetUsername: string, signal?: AbortSignal) => {
     setLoadingMatching(true);
     setMatchingError("");
 
     try {
-      const matchResponse = await fetch(
-        `${API_URL}/api/matching/users/${encodeURIComponent(targetUsername)}/issues`
-      );
-
-      if (!matchResponse.ok) {
-        setMatchingError("Unable to load recommended issues right now.");
-        return;
-      }
-
-      const matchData = await matchResponse.json();
+      const matchData = await apiFetchMatchedIssues(targetUsername, { signal });
       setRecommendations(matchData.recommendations || []);
-    } catch {
+    } catch (err: unknown) {
+      if (isAbortError(err)) return;
       setMatchingError("Unable to load recommended issues. Please try again later.");
     } finally {
       setLoadingMatching(false);
@@ -262,70 +245,11 @@ export default function Home() {
       setRecommendations([]);
     }
 
+    const searchSignal = createSearchSignal();
+
     try {
-      if (!API_URL) {
-        throw new Error("The analyzer is not configured right now. Please try again later.");
-      }
-
-      const profileResponse = await fetch(
-        `${API_URL}/api/github/users/${encodeURIComponent(cleanUsername)}`
-      );
-
-      if (profileResponse.status === 404) {
-        setError(resolveAnalyzerErrorMessage(404, { username: cleanUsername }));
-        return;
-      }
-
-      if (profileResponse.status === 429) {
-        let resetAt: string | undefined;
-        try {
-          const data = await profileResponse.json();
-          if (data.reset_at) resetAt = data.reset_at;
-        } catch {
-          // ignore
-        }
-        throw new Error(resolveAnalyzerErrorMessage(429, { resetAt }));
-      }
-
-      if (profileResponse.status === 502 || profileResponse.status === 503) {
-        throw new Error(resolveAnalyzerErrorMessage(profileResponse.status));
-      }
-
-      if (!profileResponse.ok) {
-        throw new Error(resolveAnalyzerErrorMessage(profileResponse.status));
-      }
-
-      const profileData: Profile = await profileResponse.json();
-
-      const skillsResponse = await fetch(
-        `${API_URL}/api/github/users/${encodeURIComponent(cleanUsername)}/skills`
-      );
-
-      if (skillsResponse.status === 404) {
-        setError(resolveAnalyzerErrorMessage(404, { username: cleanUsername }));
-        return;
-      }
-
-      if (skillsResponse.status === 429) {
-        let resetAt: string | undefined;
-        try {
-          const data = await skillsResponse.json();
-          if (data.reset_at) resetAt = data.reset_at;
-        } catch {
-          // ignore
-        }
-        throw new Error(resolveAnalyzerErrorMessage(429, { resetAt }));
-      }
-
-      if (skillsResponse.status === 502 || skillsResponse.status === 503) {
-        throw new Error(resolveAnalyzerErrorMessage(skillsResponse.status));
-      }
-
-      if (!skillsResponse.ok) {
-        throw new Error(resolveAnalyzerErrorMessage(skillsResponse.status));
-      }
-
-      const skillsData: SkillsData = await skillsResponse.json();
+      const profileData = await fetchUserProfile(cleanUsername, { signal: searchSignal });
+      const skillsData = await fetchUserSkills(cleanUsername, { signal: searchSignal });
 
       setProfile(profileData);
       setSkills(skillsData);
@@ -334,9 +258,30 @@ export default function Home() {
       const updatedSearches = saveRecentSearch(cleanUsername);
       setRecentSearches(updatedSearches);
 
-      fetchMatchedIssues(cleanUsername);
-    } catch (err) {
+      fetchMatchedIssues(cleanUsername, searchSignal);
+    } catch (err: unknown) {
+      if (isAbortError(err)) {
+        return; // Prior in-flight search was aborted by a new search
+      }
       setCanRetry(true);
+      if (err instanceof ApiClientError) {
+        if (err.status === 404) {
+          setError(resolveAnalyzerErrorMessage(404, { username: cleanUsername }));
+          return;
+        }
+        if (err.status === 429) {
+          setError(resolveAnalyzerErrorMessage(429, { resetAt: err.resetAt }));
+          return;
+        }
+        if (err.status === 502 || err.status === 503 || err.status === 504) {
+          setError(resolveAnalyzerErrorMessage(err.status));
+          return;
+        }
+        if (err.code === "NETWORK_ERROR" || err.status === 0) {
+          setError(resolveAnalyzerErrorMessage(new TypeError(err.message)));
+          return;
+        }
+      }
       setError(resolveAnalyzerErrorMessage(err));
     } finally {
       setLoading(false);
