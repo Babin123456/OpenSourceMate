@@ -90,9 +90,15 @@ async def get_repositories(username: str):
 @router.get(
     "/users/{username}/skills",
     response_model=UserSkillsSerializer,
+    response_model_exclude_none=True,
     summary="Analyze GitHub user technical skills",
 )
-async def get_user_skills(username: str, include_forks: bool = False):
+async def get_user_skills(
+    username: str,
+    include_forks: bool = False,
+    ignore_noise: bool = True,
+    group_related: bool = False,
+):
     validated_username = validate_github_username(username)
     repositories = await get_user_repositories(validated_username)
 
@@ -104,7 +110,11 @@ async def get_user_skills(username: str, include_forks: bool = False):
 
     details = await get_repository_details(repositories)
     result = analyze_skills(
-        repositories, include_forks=include_forks, repo_details=details
+        repositories,
+        include_forks=include_forks,
+        repo_details=details,
+        ignore_noise=ignore_noise,
+        group_related=group_related,
     )
 
     return {
