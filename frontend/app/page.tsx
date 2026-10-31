@@ -1,13 +1,13 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
+import ExportMenu from "../components/ExportMenu";
 import GitHubLink from "../components/GitHubLink";
 import ProfileCard, { type Profile } from "../components/ProfileCard";
 import RecentSearches from "../components/RecentSearches";
 import SkillChart from "../components/SkillChart";
 import {
-  downloadFile,
-  generateJsonReport,
-  generateMarkdownReport,
+  exportAnalysisData,
+  type ExportFormat,
   type ExportPayload,
 } from "../utils/exportAnalysis";
 import {
@@ -151,7 +151,7 @@ export default function Home() {
     }
   };
 
-  const handleExport = (format: "markdown" | "json") => {
+  const handleExport = (format: ExportFormat) => {
     if (!profile) return;
 
     const payload: ExportPayload = {
@@ -167,21 +167,7 @@ export default function Home() {
       exportedAt: new Date().toISOString().split("T")[0],
     };
 
-    if (format === "markdown") {
-      const content = generateMarkdownReport(payload);
-      downloadFile(
-        content,
-        `opensourcemate-${profile.username}-analysis.md`,
-        "text/markdown;charset=utf-8"
-      );
-    } else {
-      const content = generateJsonReport(payload);
-      downloadFile(
-        content,
-        `opensourcemate-${profile.username}-analysis.json`,
-        "application/json;charset=utf-8"
-      );
-    }
+    exportAnalysisData(payload, format);
   };
 
   // Dynamic language options extracted from recommendations
@@ -749,32 +735,7 @@ export default function Home() {
                   </div>
 
                   {profile && (
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleExport("markdown")}
-                        className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 ${
-                          theme === "dark"
-                            ? "border-white/10 bg-white/5 text-gray-200 hover:bg-white/10"
-                            : "border-gray-300 bg-white text-gray-800 hover:bg-gray-100"
-                        }`}
-                        title="Export summary as Markdown (.md)"
-                      >
-                        <span>↓</span> Export Markdown
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleExport("json")}
-                        className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 ${
-                          theme === "dark"
-                            ? "border-white/10 bg-white/5 text-gray-200 hover:bg-white/10"
-                            : "border-gray-300 bg-white text-gray-800 hover:bg-gray-100"
-                        }`}
-                        title="Export raw data as JSON (.json)"
-                      >
-                        <span>↓</span> Export JSON
-                      </button>
-                    </div>
+                    <ExportMenu onExport={handleExport} />
                   )}
                 </div>
 

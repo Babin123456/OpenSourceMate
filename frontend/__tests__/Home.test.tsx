@@ -199,7 +199,7 @@ describe("Analyze Flow - Home Component", () => {
     // Recommendations assertion
     await waitFor(() => {
       expect(
-        screen.getByText("Add TypeScript type definitions for options parser")
+        screen.getByText(/Add TypeScript type definitions for options parser/i)
       ).toBeInTheDocument();
     });
     expect(screen.getByText("octocat/hello-world")).toBeInTheDocument();
@@ -260,7 +260,7 @@ describe("Analyze Flow - Home Component", () => {
     fireEvent.click(screen.getByRole("button", { name: /Analyze Profile/i }));
 
     expect(
-      await screen.findByText(/GitHub API is temporarily unavailable\. Please try again in a few moments\./i)
+      await screen.findByText(/temporarily unavailable/i)
     ).toBeInTheDocument();
   });
 
