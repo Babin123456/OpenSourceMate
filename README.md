@@ -1,13 +1,54 @@
 # OpenSourceMate
 
 [![CI](https://github.com/Muskankr/OpenSourceMate/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Muskankr/OpenSourceMate/actions/workflows/ci.yml)
-
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![GitHub Stars](https://img.shields.io/github/stars/Muskankr/OpenSourceMate?style=flat&logo=github)](https://github.com/Muskankr/OpenSourceMate/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/Muskankr/OpenSourceMate?style=flat&logo=github)](https://github.com/Muskankr/OpenSourceMate/network/members)
+[![Open Issues](https://img.shields.io/github/issues/Muskankr/OpenSourceMate?style=flat&logo=github)](https://github.com/Muskankr/OpenSourceMate/issues)
+[![Deployment](https://img.shields.io/badge/Deploy-Vercel-black?logo=vercel)](https://open-source-mate-tawny.vercel.app)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
 
 > **Find open-source opportunities that match your skills.**
 
 OpenSourceMate is an AI-powered open-source contribution discovery platform that analyzes a developer's public GitHub profile and technical experience to help identify meaningful contribution opportunities.
 
 The project is being developed with a focus on making open-source contribution discovery easier for developers and newcomers.
+
+---
+
+## 📑 Table of Contents
+
+- [✨ Current Features](#-current-features)
+  - [🔎 GitHub Profile Analysis](#-github-profile-analysis)
+  - [🧠 Technical Skill Analysis](#-technical-skill-analysis)
+  - [🎯 Contribution Discovery — Coming Next](#-contribution-discovery--coming-next)
+- [🖼️ Screenshots](#%EF%B8%8F-screenshots)
+- [🏗️ Project Structure](#%EF%B8%8F-project-structure)
+- [🛠️ Tech Stack](#%EF%B8%8F-tech-stack)
+- [🚀 Getting Started](#-getting-started)
+  - [Prerequisites](#prerequisites)
+  - [1. Clone the repository](#1-clone-the-repository)
+  - [2. Run the frontend](#2-run-the-frontend)
+  - [3. Run the backend](#3-run-the-backend)
+  - [Run the backend tests](#run-the-backend-tests)
+- [📡 API Endpoints & Error Handling](#-api-endpoints--error-handling)
+  - [Health Check](#health-check)
+  - [Unified Error Format](#unified-error-format)
+- [🔐 Environment Variables](#-environment-variables)
+  - [Key Guidelines](#key-guidelines)
+  - [Template Setup Instructions](#template-setup-instructions)
+  - [Supported Environment Variables](#supported-environment-variables)
+- [🧩 How It Works](#-how-it-works)
+- [🤝 Contributing](#-contributing)
+- [👥 Contributors](#-contributors)
+- [🐛 Issues & Feature Requests](#-issues--feature-requests)
+- [🔒 Security](#-security)
+- [📚 Project Vision](#-project-vision)
+- [🌱 Contributing Areas](#-contributing-areas)
+- [📄 License](#-license)
+- [⭐ Support the Project](#-support-the-project)
+- [👩‍💻 Author](#-author)
 
 ---
 
@@ -49,6 +90,19 @@ Planned capabilities include:
 
 ---
 
+## 🖼️ Screenshots
+
+### Dashboard
+<img width="1302" height="726" alt="Dashboard" src="https://github.com/user-attachments/assets/ba5ac505-b7c3-4c32-a438-afe194e31942" />
+
+### How It Works
+<img width="1257" height="723" alt="How it works" src="https://github.com/user-attachments/assets/908d7b73-7283-4903-83bf-4e0950fa2ee9" />
+
+### Analyze Profile
+<img width="1213" height="727" alt="Analyze Profile" src="https://github.com/user-attachments/assets/a115a54f-6359-4db9-83d1-647e28e4167a" />
+
+---
+
 ## 🏗️ Project Structure
 
 ```text
@@ -66,18 +120,13 @@ OpenSourceMate/
 │   ├── technical skill visualization
 │   └── contribution discovery interface
 │
+├── docs/
+│   └── Architecture, component guides, and specifications
+│
 └── README.md
 ```
 
-## Screenshots
-# Dashboard
-<img width="1302" height="726" alt="image" src="https://github.com/user-attachments/assets/ba5ac505-b7c3-4c32-a438-afe194e31942" />
-
-# How it works?
-<img width="1257" height="723" alt="image" src="https://github.com/user-attachments/assets/908d7b73-7283-4903-83bf-4e0950fa2ee9" />
-
-# Analyze Profile
-<img width="1213" height="727" alt="image" src="https://github.com/user-attachments/assets/a115a54f-6359-4db9-83d1-647e28e4167a" />
+> 📖 For detailed system design, component diagrams, and request flows, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ---
 
@@ -457,6 +506,20 @@ For detailed guidelines on setup, branch naming, PR conventions, and coding stan
 
 ---
 
+## 👥 Contributors
+
+Thanks goes to these wonderful people for contributing to OpenSourceMate:
+
+<p align="left">
+  <a href="https://github.com/Muskankr/OpenSourceMate/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=Muskankr/OpenSourceMate" alt="Contributors" />
+  </a>
+</p>
+
+Contributions of any kind are welcome! Please check out [CONTRIBUTING.md](CONTRIBUTING.md) to get started.
+
+---
+
 ## 🐛 Issues & Feature Requests
 
 Found a bug or have an idea?
@@ -527,7 +590,7 @@ There are many potential areas for contributors:
 
 This project is licensed under the **MIT License**.
 
-See the `LICENSE` file for details.
+See the [LICENSE](LICENSE) file for details.
 
 ---
 
