@@ -776,6 +776,12 @@ export default function Home() {
                             />
                           ))}
                         </div>
+
+                        <SkillsToLearn
+                          skills={skills.skills}
+                          theme={theme}
+                          className="mt-8"
+                        />
                       </>
                     )}
                   </div>
