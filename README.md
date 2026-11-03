@@ -247,6 +247,24 @@ pytest --cov=app
 
 ---
 
+## ⚡ Root Development Commands (Makefile & PowerShell)
+
+For developer convenience, common tasks can be run directly from the repository root using `make` (macOS/Linux) or the PowerShell helper script (Windows):
+
+| Task | macOS / Linux (`make`) | Windows PowerShell (`.\scripts\dev.ps1`) |
+|---|---|---|
+| **Install all dependencies** | `make install` | `.\scripts\dev.ps1 install` |
+| **Run frontend dev server** | `make dev-frontend` | `.\scripts\dev.ps1 dev-frontend` |
+| **Run backend dev server** | `make dev-backend` | `.\scripts\dev.ps1 dev-backend` |
+| **Run all linters** | `make lint` | `.\scripts\dev.ps1 lint` |
+| **Run code formatters** | `make format` | `.\scripts\dev.ps1 format` |
+| **Run all tests** | `make test` | `.\scripts\dev.ps1 test` |
+| **Run backend tests** | `make test-backend` | `.\scripts\dev.ps1 test-backend` |
+| **Run frontend tests** | `make test-frontend` | `.\scripts\dev.ps1 test-frontend` |
+| **Clean cache files** | `make clean` | `.\scripts\dev.ps1 clean` |
+
+---
+
 ## 📡 API Endpoints & Error Handling
 
 All backend responses are serialized with Pydantic serializers, and error responses conform to a unified error shape.
