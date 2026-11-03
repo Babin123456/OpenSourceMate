@@ -40,6 +40,7 @@ The project is being developed with a focus on making open-source contribution d
   - [Template Setup Instructions](#template-setup-instructions)
   - [Supported Environment Variables](#supported-environment-variables)
 - [🧩 How It Works](#-how-it-works)
+- [🧹 Code Quality, Linting & Pre-Commit](#-code-quality-linting--pre-commit)
 - [🤝 Contributing](#-contributing)
 - [👥 Contributors](#-contributors)
 - [🐛 Issues & Feature Requests](#-issues--feature-requests)
@@ -58,20 +59,20 @@ The project is being developed with a focus on making open-source contribution d
 
 Enter a public GitHub username and OpenSourceMate retrieves useful profile information such as:
 
-* GitHub username
-* Name and bio
-* Public repository count
-* Followers and following
-* Link to the GitHub profile
+- GitHub username
+- Name and bio
+- Public repository count
+- Followers and following
+- Link to the GitHub profile
 
 ### 🧠 Technical Skill Analysis
 
 OpenSourceMate analyzes the user's public GitHub repositories to identify technical skills and shows:
 
-* Detected technologies/languages
-* Repository count associated with each skill
-* Skill distribution
-* Number of repositories analyzed
+- Detected technologies/languages
+- Repository count associated with each skill
+- Skill distribution
+- Number of repositories analyzed
 
 ### 🎯 Contribution Discovery — Coming Next
 
@@ -79,12 +80,12 @@ The next stage of OpenSourceMate is focused on connecting a developer's technica
 
 Planned capabilities include:
 
-* Skill-based issue matching
-* Personalized issue recommendations
-* Contribution compatibility analysis
-* Beginner-friendly issue discovery
-* Repository and issue context
-* Contribution opportunity ranking
+- Skill-based issue matching
+- Personalized issue recommendations
+- Contribution compatibility analysis
+- Beginner-friendly issue discovery
+- Repository and issue context
+- Contribution opportunity ranking
 
 > Features marked as planned are part of the project's roadmap and may not be available yet.
 
@@ -93,12 +94,15 @@ Planned capabilities include:
 ## 🖼️ Screenshots
 
 ### Dashboard
+
 <img width="1302" height="726" alt="Dashboard" src="https://github.com/user-attachments/assets/ba5ac505-b7c3-4c32-a438-afe194e31942" />
 
 ### How It Works
+
 <img width="1257" height="723" alt="How it works" src="https://github.com/user-attachments/assets/908d7b73-7283-4903-83bf-4e0950fa2ee9" />
 
 ### Analyze Profile
+
 <img width="1213" height="727" alt="Analyze Profile" src="https://github.com/user-attachments/assets/a115a54f-6359-4db9-83d1-647e28e4167a" />
 
 ---
@@ -134,34 +138,34 @@ OpenSourceMate/
 
 ### Frontend
 
-* Next.js
-* React
-* TypeScript
-* Tailwind CSS
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
 
 ### Backend
 
-* Python
-* FastAPI
-* Uvicorn
-* Pydantic
+- Python
+- FastAPI
+- Uvicorn
+- Pydantic
 
 ### AI / Data
 
 The backend is being developed with an AI/data ecosystem that includes technologies such as:
 
-* Google GenAI
-* OpenAI-compatible tooling
-* Sentence Transformers
-* Transformers
-* spaCy
-* PyTorch
+- Google GenAI
+- OpenAI-compatible tooling
+- Sentence Transformers
+- Transformers
+- spaCy
+- PyTorch
 
 ### Developer & Integration Tools
 
-* GitHub APIs
-* GitPython
-* REST APIs
+- GitHub APIs
+- GitPython
+- REST APIs
 
 ---
 
@@ -171,10 +175,10 @@ The backend is being developed with an AI/data ecosystem that includes technolog
 
 Make sure you have the following installed:
 
-* Git
-* Node.js
-* npm
-* Python 3.x
+- Git
+- Node.js
+- npm
+- Python 3.x
 
 ---
 
@@ -340,11 +344,11 @@ All error responses across all API endpoints return a standardized JSON structur
 ```
 
 Common error codes:
-* `INVALID_USERNAME` (HTTP 400): Username violates GitHub format constraints.
-* `NOT_FOUND` (HTTP 404): Requested GitHub user or resource not found.
-* `VALIDATION_ERROR` (HTTP 422): Request parameters or body payload failed schema validation.
-* `RATE_LIMIT_EXCEEDED` (HTTP 429): Upstream GitHub rate limit reached; includes `reset_at` timestamp.
-* `INTERNAL_SERVER_ERROR` (HTTP 500): Unhandled exception during processing.
+- `INVALID_USERNAME` (HTTP 400): Username violates GitHub format constraints.
+- `NOT_FOUND` (HTTP 404): Requested GitHub user or resource not found.
+- `VALIDATION_ERROR` (HTTP 422): Request parameters or body payload failed schema validation.
+- `RATE_LIMIT_EXCEEDED` (HTTP 429): Upstream GitHub rate limit reached; includes `reset_at` timestamp.
+- `INTERNAL_SERVER_ERROR` (HTTP 500): Unhandled exception during processing.
 
 ---
 
@@ -465,9 +469,29 @@ Personalized Opportunities
 
 ---
 
+## 🧹 Code Quality, Linting & Pre-Commit
+
+OpenSourceMate uses automated code quality tools to maintain clean and reliable code:
+
+- **Pre-Commit**: Automated Git pre-commit hooks configured via `.pre-commit-config.yaml`.
+  ```bash
+  # Install pre-commit hook into your local git repository
+  cd backend && pip install -r requirements-dev.txt
+  pre-commit install
+
+  # Run pre-commit checks manually on all files
+  pre-commit run --all-files
+  ```
+- **Backend (Python)**: [Ruff](https://docs.astral.sh/ruff/) for linting and formatting (`ruff check backend`, `ruff format backend`).
+- **Frontend (TypeScript/Next.js)**: [Prettier](https://prettier.io/) and [ESLint](https://eslint.org/) (`npm run format:check`, `npm run lint`, `npx tsc --noEmit`).
+
+See the [Linting and Formatting Guide](docs/linting-and-formatting.md) for full instructions.
+
+---
+
 ## 🤝 Contributing
 
-* See the [Label Guide](docs/LABELS.md) to find an issue that fits your skills.
+- See the [Label Guide](docs/LABELS.md) to find an issue that fits your skills.
 
 OpenSourceMate is being built as an open-source project, and contributions are welcome.
 
@@ -497,10 +521,10 @@ git push origin feature/your-feature
 
 Then open a pull request describing:
 
-* What you changed
-* Why you changed it
-* How you tested it
-* Any relevant screenshots or examples
+- What you changed
+- Why you changed it
+- How you tested it
+- Any relevant screenshots or examples
 
 For detailed guidelines on setup, branch naming, PR conventions, and coding standards, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -526,12 +550,12 @@ Found a bug or have an idea?
 
 Open an issue and include:
 
-* A clear title
-* Description of the problem or feature
-* Steps to reproduce, when applicable
-* Expected behavior
-* Actual behavior
-* Screenshots or logs when useful
+- A clear title
+- Description of the problem or feature
+- Steps to reproduce, when applicable
+- Expected behavior
+- Actual behavior
+- Screenshots or logs when useful
 
 For larger changes, discuss the idea before starting implementation.
 
@@ -545,11 +569,11 @@ A dedicated security reporting process will be documented as the project matures
 
 Never include:
 
-* API keys
-* Access tokens
-* Passwords
-* Personal credentials
-* Private repository information
+- API keys
+- Access tokens
+- Passwords
+- Personal credentials
+- Private repository information
 
 in issues or pull requests.
 
@@ -559,11 +583,11 @@ in issues or pull requests.
 
 Open-source contribution can be difficult to navigate, especially for developers who are unsure:
 
-* Which projects match their skills?
-* Which issues are suitable for their experience?
-* How difficult is an issue?
-* What does a repository actually need?
-* Where should they start?
+- Which projects match their skills?
+- Which issues are suitable for their experience?
+- How difficult is an issue?
+- What does a repository actually need?
+- Where should they start?
 
 OpenSourceMate aims to reduce that discovery barrier by connecting a developer's existing technical experience with meaningful open-source contribution opportunities.
 
@@ -598,11 +622,11 @@ See the [LICENSE](LICENSE) file for details.
 
 If you find OpenSourceMate useful or are interested in its development:
 
-* ⭐ Star the repository
-* 🐛 Report bugs
-* 💡 Suggest features
-* 🔧 Submit pull requests
-* 📖 Improve documentation
+- ⭐ Star the repository
+- 🐛 Report bugs
+- 💡 Suggest features
+- 🔧 Submit pull requests
+- 📖 Improve documentation
 
 Every contribution helps make open-source participation easier for developers.
 
