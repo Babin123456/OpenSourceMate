@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import ExportMenu from "../components/ExportMenu";
 import GitHubLink from "../components/GitHubLink";
@@ -1149,7 +1150,16 @@ export default function Home() {
             }`}
           >
             <p>© {new Date().getFullYear()} OpenSourceMate</p>
-            <p>Built for the open-source community.</p>
+            <div className="flex items-center gap-4">
+              <Link
+                href="/privacy"
+                className="transition hover:text-purple-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 rounded"
+              >
+                Privacy & Data Handling
+              </Link>
+              <span>•</span>
+              <p>Built for the open-source community.</p>
+            </div>
             <GitHubLink className="transition hover:text-purple-400">
               View Repository ↗
             </GitHubLink>
