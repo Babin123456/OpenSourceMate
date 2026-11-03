@@ -13,7 +13,7 @@ from app.utils.validation import validate_github_username
 
 
 router = APIRouter(
-    prefix="/api/matching",
+    prefix="/matching",
     tags=["Matching"],
 )
 
