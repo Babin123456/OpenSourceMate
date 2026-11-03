@@ -6,6 +6,8 @@ import ProfileCard from "../components/ProfileCard";
 import RecentSearches from "../components/RecentSearches";
 import ServiceUnavailableBanner from "../components/ServiceUnavailableBanner";
 import SkillChart from "../components/SkillChart";
+import SkillProficiencyBadge from "../components/SkillProficiencyBadge";
+import SkillsToLearn from "../components/SkillsToLearn";
 import {
   type GitHubUserProfile as Profile,
   type SkillItem as Skill,
@@ -793,6 +795,12 @@ export default function Home() {
                             />
                           ))}
                         </div>
+
+                        <SkillsToLearn
+                          skills={skills.skills}
+                          theme={theme}
+                          className="mt-8"
+                        />
                       </>
                     )}
                   </div>
@@ -1204,7 +1212,17 @@ function SkillCard({
     >
       <div className="flex items-center justify-between">
         <div>
-          <h4 className="font-semibold">{skill.name}</h4>
+          <div className="flex flex-wrap items-center gap-2">
+            <h4 className="font-semibold">{skill.name}</h4>
+            <SkillProficiencyBadge
+              level={skill.proficiency}
+              score={skill.proficiency_score}
+              reason={skill.proficiency_reason}
+              repositoryCount={skill.repository_count}
+              percentage={skill.percentage}
+              theme={theme}
+            />
+          </div>
 
           <p
             className={`mt-1 text-xs ${
