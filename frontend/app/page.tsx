@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import ExportMenu from "../components/ExportMenu";
 import GitHubLink from "../components/GitHubLink";
@@ -354,6 +355,13 @@ export default function Home() {
                 Analyzer
               </a>
 
+              <Link
+                href="/compare"
+                className="rounded-lg px-2 py-1 transition hover:text-purple-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
+              >
+                Compare
+              </Link>
+
               <GitHubLink className="rounded-lg px-2 py-1 transition hover:text-purple-400" />
 
               <button
@@ -680,7 +688,19 @@ export default function Home() {
                   </div>
 
                   {profile && (
-                    <ExportMenu onExport={handleExport} />
+                    <div className="flex flex-wrap items-center gap-3">
+                      <Link
+                        href={`/compare?user1=${encodeURIComponent(profile.username)}`}
+                        className={`inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-xs font-semibold transition ${
+                          theme === "dark"
+                            ? "border-white/10 bg-white/5 text-gray-200 hover:bg-white/10"
+                            : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                        }`}
+                      >
+                        Compare Profile &rarr;
+                      </Link>
+                      <ExportMenu onExport={handleExport} />
+                    </div>
                   )}
                 </div>
 
