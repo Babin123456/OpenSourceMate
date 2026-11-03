@@ -31,7 +31,11 @@ async def lifespan(app: FastAPI):
     await close_client()
 
 
+from app.middleware.logging import StructuredLoggingMiddleware
+from app.utils.logging import setup_structured_logging
+
 settings = get_settings()
+setup_structured_logging(level=settings.log_level)
 
 app = FastAPI(
     title="OpenSourceMate API",
@@ -40,6 +44,8 @@ app = FastAPI(
     debug=settings.debug,
     lifespan=lifespan,
 )
+
+app.add_middleware(StructuredLoggingMiddleware)
 
 if settings.allowed_hosts and "*" not in settings.allowed_hosts:
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.allowed_hosts)
