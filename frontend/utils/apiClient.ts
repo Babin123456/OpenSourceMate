@@ -24,6 +24,7 @@ export interface SearchOptions {
   includeForks?: boolean;
   timeoutMs?: number;
   fetchIssues?: boolean;
+  refresh?: boolean;
 }
 
 /**
@@ -271,10 +272,11 @@ export async function typedRequest<T>(
  */
 export async function fetchUserProfile(
   username: string,
-  options?: RequestOptions
+  options?: RequestOptions & { refresh?: boolean }
 ): Promise<GitHubUserProfile> {
   const clean = encodeURIComponent(username.trim());
-  return typedRequest<GitHubUserProfile>(`/api/github/users/${clean}`, options);
+  const query = options?.refresh ? "?refresh=true" : "";
+  return typedRequest<GitHubUserProfile>(`/api/github/users/${clean}${query}`, options);
 }
 
 /**
@@ -282,10 +284,13 @@ export async function fetchUserProfile(
  */
 export async function fetchUserSkills(
   username: string,
-  options?: RequestOptions & { includeForks?: boolean }
+  options?: RequestOptions & { includeForks?: boolean; refresh?: boolean }
 ): Promise<UserSkillsResponse> {
   const clean = encodeURIComponent(username.trim());
-  const query = options?.includeForks ? "?include_forks=true" : "";
+  const params = new URLSearchParams();
+  if (options?.includeForks) params.append("include_forks", "true");
+  if (options?.refresh) params.append("refresh", "true");
+  const query = params.toString() ? `?${params.toString()}` : "";
   return typedRequest<UserSkillsResponse>(
     `/api/github/users/${clean}/skills${query}`,
     options
@@ -328,10 +333,11 @@ export async function searchUser(
   };
 
   const [profile, skills] = await Promise.all([
-    fetchUserProfile(username, requestOptions),
+    fetchUserProfile(username, { ...requestOptions, refresh: options.refresh }),
     fetchUserSkills(username, {
       ...requestOptions,
       includeForks: options.includeForks,
+      refresh: options.refresh,
     }),
   ]);
 

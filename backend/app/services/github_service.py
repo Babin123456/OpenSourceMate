@@ -88,12 +88,12 @@ async def github_get(url: str, params: dict | None = None) -> httpx.Response:
     return response
 
 
-async def get_github_user(username: str):
+async def get_github_user(username: str, refresh: bool = False):
     key = f"github:user:{username.lower()}"
-    cached = cache.get(key)
-
-    if cached is not None:
-        return cached
+    if not refresh:
+        cached = cache.get(key)
+        if cached is not None:
+            return cached
 
     response = await github_get(f"{GITHUB_API_URL}/users/{username}")
 
@@ -141,18 +141,19 @@ async def get_user_repositories(
     max_pages: int | None = None,
     per_page: int | None = None,
     max_cap: int | None = None,
+    refresh: bool = False,
 ) -> list[dict] | None:
     """Fetch public repositories for a user, following pagination up to a sensible cap.
 
     Follows GitHub RFC 5988 Link headers and supports per_page navigation up to
     max_pages / max_cap (Issue #129). Integrates seamlessly with rate-limit
-    detection (Issue #14) and TTL cache.
+    detection (Issue #14), TTL cache, and cache refresh bypass (Issue #132).
     """
     key = f"github:repos:{username.lower()}"
-    cached = cache.get(key)
-
-    if cached is not None:
-        return cached
+    if not refresh:
+        cached = cache.get(key)
+        if cached is not None:
+            return cached
 
     settings = get_settings()
     effective_max_pages = (
@@ -281,12 +282,12 @@ async def _fetch_manifest(full_name: str, filename: str) -> list[str]:
     return _dependencies_from_manifest(filename, text)
 
 
-async def _fetch_repo_details(full_name: str) -> dict:
+async def _fetch_repo_details(full_name: str, refresh: bool = False) -> dict:
     key = f"github:repo-details:{full_name.lower()}"
-    cached = cache.get(key)
-
-    if cached is not None:
-        return cached
+    if not refresh:
+        cached = cache.get(key)
+        if cached is not None:
+            return cached
 
     details = {"languages": {}, "dependencies": []}
 
@@ -307,7 +308,9 @@ async def _fetch_repo_details(full_name: str) -> dict:
 
 
 async def get_repository_details(
-    repositories: list[dict], limit: int = MAX_DETAIL_REPOSITORIES
+    repositories: list[dict],
+    limit: int = MAX_DETAIL_REPOSITORIES,
+    refresh: bool = False,
 ) -> dict[str, dict]:
     """Languages and dependencies for the most recently updated non-fork repos.
 
@@ -323,7 +326,7 @@ async def get_repository_details(
     for repository in candidates[:limit]:
         try:
             details[repository["full_name"]] = await _fetch_repo_details(
-                repository["full_name"]
+                repository["full_name"], refresh=refresh
             )
         except (GitHubRateLimitError, httpx.HTTPError):
             continue

@@ -1,4 +1,6 @@
-from fastapi import APIRouter, HTTPException
+from datetime import datetime, timezone
+
+from fastapi import APIRouter, HTTPException, Query
 
 from app.config import get_settings
 from app.schemas.serializers import (
@@ -26,9 +28,12 @@ router = APIRouter(
     response_model=ExtendedGitHubUserProfileSerializer,
     summary="Get GitHub user profile",
 )
-async def get_user(username: str):
+async def get_user(
+    username: str,
+    refresh: bool = Query(default=False, description="Bypass cache and fetch fresh data (Issue #132)"),
+):
     validated_username = validate_github_username(username)
-    user = await get_github_user(validated_username)
+    user = await get_github_user(validated_username, refresh=refresh)
 
     if user is None:
         raise HTTPException(
@@ -51,6 +56,7 @@ async def get_user(username: str):
         "twitter_username": user.get("twitter_username"),
         "created_at": user.get("created_at"),
         "public_gists": user.get("public_gists", 0),
+        "fetched_at": datetime.now(timezone.utc).isoformat(),
     }
 
 
@@ -59,9 +65,12 @@ async def get_user(username: str):
     response_model=RepositoryListSerializer,
     summary="Get GitHub user repositories",
 )
-async def get_repositories(username: str):
+async def get_repositories(
+    username: str,
+    refresh: bool = Query(default=False, description="Bypass cache and fetch fresh data (Issue #132)"),
+):
     validated_username = validate_github_username(username)
-    repositories = await get_user_repositories(validated_username)
+    repositories = await get_user_repositories(validated_username, refresh=refresh)
 
     if repositories is None:
         raise HTTPException(
@@ -80,6 +89,7 @@ async def get_repositories(username: str):
         "repository_count": len(repositories),
         "total_pages_fetched": max(1, pages) if repositories else 0,
         "has_more": has_more,
+        "fetched_at": datetime.now(timezone.utc).isoformat(),
         "repositories": [
             {
                 "name": repo["name"],
@@ -108,9 +118,10 @@ async def get_user_skills(
     ignore_noise: bool = True,
     group_related: bool = False,
     include_proficiency: bool = True,
+    refresh: bool = Query(default=False, description="Bypass cache and re-analyze fresh data (Issue #132)"),
 ):
     validated_username = validate_github_username(username)
-    repositories = await get_user_repositories(validated_username)
+    repositories = await get_user_repositories(validated_username, refresh=refresh)
 
     if repositories is None:
         raise HTTPException(
@@ -118,7 +129,7 @@ async def get_user_skills(
             detail="GitHub user not found",
         )
 
-    details = await get_repository_details(repositories)
+    details = await get_repository_details(repositories, refresh=refresh)
     result = analyze_skills(
         repositories,
         include_forks=include_forks,
@@ -130,5 +141,6 @@ async def get_user_skills(
 
     return {
         "username": validated_username,
+        "analyzed_at": datetime.now(timezone.utc).isoformat(),
         **result,
     }

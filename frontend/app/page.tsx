@@ -4,6 +4,7 @@ import ExportMenu from "../components/ExportMenu";
 import GitHubLink from "../components/GitHubLink";
 import ProfileCard from "../components/ProfileCard";
 import RecentSearches from "../components/RecentSearches";
+import RefreshAnalysisButton from "../components/RefreshAnalysisButton";
 import SkillChart from "../components/SkillChart";
 import SkillProficiencyBadge from "../components/SkillProficiencyBadge";
 import {
@@ -72,6 +73,7 @@ export default function Home() {
 
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [skills, setSkills] = useState<SkillsData | null>(null);
@@ -285,6 +287,28 @@ export default function Home() {
       setError(resolveAnalyzerErrorMessage(err));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    if (!profile?.username || loading || isRefreshing) return;
+    setIsRefreshing(true);
+    const searchSignal = createSearchSignal();
+    try {
+      const [profileData, skillsData] = await Promise.all([
+        fetchUserProfile(profile.username, { signal: searchSignal, refresh: true }),
+        fetchUserSkills(profile.username, { signal: searchSignal, refresh: true }),
+      ]);
+      setProfile(profileData);
+      setSkills(skillsData);
+      fetchMatchedIssues(profile.username, searchSignal);
+    } catch (err: unknown) {
+      if (isAbortError(err)) return;
+      if (err instanceof ApiClientError && err.status === 429) {
+        setError(resolveAnalyzerErrorMessage(429, { resetAt: err.resetAt }));
+      }
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -680,7 +704,15 @@ export default function Home() {
                   </div>
 
                   {profile && (
-                    <ExportMenu onExport={handleExport} />
+                    <div className="flex flex-wrap items-center gap-2">
+                      <RefreshAnalysisButton
+                        analyzedAt={skills?.analyzed_at || profile?.fetched_at}
+                        onRefresh={handleRefresh}
+                        isLoading={isRefreshing}
+                        theme={theme}
+                      />
+                      <ExportMenu onExport={handleExport} />
+                    </div>
                   )}
                 </div>
 
