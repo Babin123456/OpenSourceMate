@@ -87,7 +87,7 @@ Planned capabilities include:
 - Repository and issue context
 - Contribution opportunity ranking
 
-> Features marked as planned are part of the project's roadmap and may not be available yet.
+> Features marked as planned are part of the project's roadmap and may not be available yet. See [ROADMAP.md](ROADMAP.md) for full milestones, feature statuses, and community planning.
 
 ---
 
