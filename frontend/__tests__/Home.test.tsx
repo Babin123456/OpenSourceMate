@@ -1,4 +1,3 @@
-import React from "react";
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import Home from "../app/page";
 
@@ -342,7 +341,8 @@ describe("Analyze Flow - Home Component", () => {
     render(<Home />);
 
     const themeBtn = screen.getAllByRole("button", { name: /Switch to light mode/i })[0];
-    fireEvent.click(themeBtn);
+    expect(themeBtn).toBeDefined();
+    fireEvent.click(themeBtn!);
 
     expect(document.documentElement.dataset.theme).toBe("light");
     expect(localStorage.getItem("theme")).toBe("light");
