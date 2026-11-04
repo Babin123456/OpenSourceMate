@@ -2,13 +2,15 @@ import base64
 import json
 import re
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import httpx
 
 from app.cache import TTLCache
 from app.config import get_settings
+from app.utils.logging import get_logger, sanitize_sensitive_data
 
+logger = get_logger("app.services.github")
 
 GITHUB_API_URL = "https://api.github.com"
 
@@ -52,15 +54,13 @@ def _rate_limit_reset(response: httpx.Response) -> datetime | None:
     reset = response.headers.get("X-RateLimit-Reset")
 
     if reset and reset.isdigit():
-        return datetime.fromtimestamp(int(reset), tz=timezone.utc)
+        return datetime.fromtimestamp(int(reset), tz=UTC)
 
     # Secondary rate limits only send Retry-After (in seconds).
     retry_after = response.headers.get("Retry-After")
 
     if retry_after and retry_after.isdigit():
-        return datetime.fromtimestamp(
-            time.time() + int(retry_after), tz=timezone.utc
-        )
+        return datetime.fromtimestamp(time.time() + int(retry_after), tz=UTC)
 
     return None
 
@@ -80,9 +80,29 @@ async def github_get(url: str, params: dict | None = None) -> httpx.Response:
 
     Raises GitHubRateLimitError when GitHub reports the rate limit is hit.
     """
+    logger.debug(
+        f"Calling external GitHub API: {url}",
+        extra={
+            "structured_data": {
+                "event": "github_api_call",
+                "url": url,
+                "params": sanitize_sensitive_data(params or {}),
+            }
+        },
+    )
     response = await get_client().get(url, params=params)
 
     if _is_rate_limited(response):
+        logger.warning(
+            f"GitHub API rate limit exceeded on {url}",
+            extra={
+                "structured_data": {
+                    "event": "github_rate_limited",
+                    "status_code": response.status_code,
+                    "remaining": response.headers.get("X-RateLimit-Remaining"),
+                }
+            },
+        )
         raise GitHubRateLimitError(_rate_limit_reset(response))
 
     return response
@@ -333,6 +353,7 @@ async def get_repository_details(
 
     return details
 
+
 async def get_github_diagnostics() -> dict:
     """Check GitHub API reachability, auth token presence, and quota status."""
     settings = get_settings()
@@ -359,7 +380,7 @@ async def get_github_diagnostics() -> dict:
             def _format_reset(ts: int | None) -> str | None:
                 if not ts:
                     return None
-                return datetime.fromtimestamp(ts, tz=timezone.utc).isoformat()
+                return datetime.fromtimestamp(ts, tz=UTC).isoformat()
 
             return {
                 "reachable": True,

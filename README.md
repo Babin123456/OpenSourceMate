@@ -1,7 +1,13 @@
 # OpenSourceMate
 
 [![CI](https://github.com/Muskankr/OpenSourceMate/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Muskankr/OpenSourceMate/actions/workflows/ci.yml)
-
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![GitHub Stars](https://img.shields.io/github/stars/Muskankr/OpenSourceMate?style=flat&logo=github)](https://github.com/Muskankr/OpenSourceMate/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/Muskankr/OpenSourceMate?style=flat&logo=github)](https://github.com/Muskankr/OpenSourceMate/network/members)
+[![Open Issues](https://img.shields.io/github/issues/Muskankr/OpenSourceMate?style=flat&logo=github)](https://github.com/Muskankr/OpenSourceMate/issues)
+[![Deployment](https://img.shields.io/badge/Deploy-Vercel-black?logo=vercel)](https://open-source-mate-tawny.vercel.app)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
 
 > **Find open-source opportunities that match your skills.**
 
@@ -11,26 +17,62 @@ The project is being developed with a focus on making open-source contribution d
 
 ---
 
+## 📑 Table of Contents
+
+- [✨ Current Features](#-current-features)
+  - [🔎 GitHub Profile Analysis](#-github-profile-analysis)
+  - [🧠 Technical Skill Analysis](#-technical-skill-analysis)
+  - [🎯 Contribution Discovery — Coming Next](#-contribution-discovery--coming-next)
+- [🖼️ Screenshots](#%EF%B8%8F-screenshots)
+- [🏗️ Project Structure](#%EF%B8%8F-project-structure)
+- [🛠️ Tech Stack](#%EF%B8%8F-tech-stack)
+- [🚀 Getting Started](#-getting-started)
+  - [Prerequisites](#prerequisites)
+  - [1. Clone the repository](#1-clone-the-repository)
+  - [2. Run the frontend](#2-run-the-frontend)
+  - [3. Run the backend](#3-run-the-backend)
+  - [Run the backend tests](#run-the-backend-tests)
+- [📡 API Endpoints & Error Handling](#-api-endpoints--error-handling)
+  - [Health Check](#health-check)
+  - [Unified Error Format](#unified-error-format)
+- [🔐 Environment Variables](#-environment-variables)
+  - [Key Guidelines](#key-guidelines)
+  - [Template Setup Instructions](#template-setup-instructions)
+  - [Supported Environment Variables](#supported-environment-variables)
+- [🧩 How It Works](#-how-it-works)
+- [🧹 Code Quality, Linting & Pre-Commit](#-code-quality-linting--pre-commit)
+- [🤝 Contributing](#-contributing)
+- [👥 Contributors](#-contributors)
+- [🐛 Issues & Feature Requests](#-issues--feature-requests)
+- [🔒 Security](#-security)
+- [📚 Project Vision](#-project-vision)
+- [🌱 Contributing Areas](#-contributing-areas)
+- [📄 License](#-license)
+- [⭐ Support the Project](#-support-the-project)
+- [👩‍💻 Author](#-author)
+
+---
+
 ## ✨ Current Features
 
 ### 🔎 GitHub Profile Analysis
 
 Enter a public GitHub username and OpenSourceMate retrieves useful profile information such as:
 
-* GitHub username
-* Name and bio
-* Public repository count
-* Followers and following
-* Link to the GitHub profile
+- GitHub username
+- Name and bio
+- Public repository count
+- Followers and following
+- Link to the GitHub profile
 
 ### 🧠 Technical Skill Analysis
 
 OpenSourceMate analyzes the user's public GitHub repositories to identify technical skills and shows:
 
-* Detected technologies/languages
-* Repository count associated with each skill
-* Skill distribution
-* Number of repositories analyzed
+- Detected technologies/languages
+- Repository count associated with each skill
+- Skill distribution
+- Number of repositories analyzed
 
 ### 🎯 Contribution Discovery — Coming Next
 
@@ -38,14 +80,30 @@ The next stage of OpenSourceMate is focused on connecting a developer's technica
 
 Planned capabilities include:
 
-* Skill-based issue matching
-* Personalized issue recommendations
-* Contribution compatibility analysis
-* Beginner-friendly issue discovery
-* Repository and issue context
-* Contribution opportunity ranking
+- Skill-based issue matching
+- Personalized issue recommendations
+- Contribution compatibility analysis
+- Beginner-friendly issue discovery
+- Repository and issue context
+- Contribution opportunity ranking
 
-> Features marked as planned are part of the project's roadmap and may not be available yet.
+> Features marked as planned are part of the project's roadmap and may not be available yet. See [ROADMAP.md](ROADMAP.md) for full milestones, feature statuses, and community planning.
+
+---
+
+## 🖼️ Screenshots
+
+### Dashboard
+
+<img width="1302" height="726" alt="Dashboard" src="https://github.com/user-attachments/assets/ba5ac505-b7c3-4c32-a438-afe194e31942" />
+
+### How It Works
+
+<img width="1257" height="723" alt="How it works" src="https://github.com/user-attachments/assets/908d7b73-7283-4903-83bf-4e0950fa2ee9" />
+
+### Analyze Profile
+
+<img width="1213" height="727" alt="Analyze Profile" src="https://github.com/user-attachments/assets/a115a54f-6359-4db9-83d1-647e28e4167a" />
 
 ---
 
@@ -66,18 +124,13 @@ OpenSourceMate/
 │   ├── technical skill visualization
 │   └── contribution discovery interface
 │
+├── docs/
+│   └── Architecture, component guides, and specifications
+│
 └── README.md
 ```
 
-## Screenshots
-# Dashboard
-<img width="1302" height="726" alt="image" src="https://github.com/user-attachments/assets/ba5ac505-b7c3-4c32-a438-afe194e31942" />
-
-# How it works?
-<img width="1257" height="723" alt="image" src="https://github.com/user-attachments/assets/908d7b73-7283-4903-83bf-4e0950fa2ee9" />
-
-# Analyze Profile
-<img width="1213" height="727" alt="image" src="https://github.com/user-attachments/assets/a115a54f-6359-4db9-83d1-647e28e4167a" />
+> 📖 For detailed system design, component diagrams, and request flows, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ---
 
@@ -85,34 +138,34 @@ OpenSourceMate/
 
 ### Frontend
 
-* Next.js
-* React
-* TypeScript
-* Tailwind CSS
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
 
 ### Backend
 
-* Python
-* FastAPI
-* Uvicorn
-* Pydantic
+- Python
+- FastAPI
+- Uvicorn
+- Pydantic
 
 ### AI / Data
 
 The backend is being developed with an AI/data ecosystem that includes technologies such as:
 
-* Google GenAI
-* OpenAI-compatible tooling
-* Sentence Transformers
-* Transformers
-* spaCy
-* PyTorch
+- Google GenAI
+- OpenAI-compatible tooling
+- Sentence Transformers
+- Transformers
+- spaCy
+- PyTorch
 
 ### Developer & Integration Tools
 
-* GitHub APIs
-* GitPython
-* REST APIs
+- GitHub APIs
+- GitPython
+- REST APIs
 
 ---
 
@@ -122,10 +175,10 @@ The backend is being developed with an AI/data ecosystem that includes technolog
 
 Make sure you have the following installed:
 
-* Git
-* Node.js
-* npm
-* Python 3.x
+- Git
+- Node.js
+- npm
+- Python 3.x
 
 ---
 
@@ -197,7 +250,7 @@ python3 -m venv venv
 source venv/bin/activate
 ```
 
-Configure environment variables (optional, see [Environment Variables](#-environment-variables)):
+Configure environment variables (optional, see [Environment Variables](#environment-variables)):
 
 ### Windows (PowerShell)
 
@@ -241,6 +294,24 @@ pytest --cov=app
 ```
 
 > Backend setup is currently evolving. More detailed setup instructions and environment configuration will be documented as the project develops.
+
+---
+
+## ⚡ Root Development Commands (Makefile & PowerShell)
+
+For developer convenience, common tasks can be run directly from the repository root using `make` (macOS/Linux) or the PowerShell helper script (Windows):
+
+| Task | macOS / Linux (`make`) | Windows PowerShell (`.\scripts\dev.ps1`) |
+|---|---|---|
+| **Install all dependencies** | `make install` | `.\scripts\dev.ps1 install` |
+| **Run frontend dev server** | `make dev-frontend` | `.\scripts\dev.ps1 dev-frontend` |
+| **Run backend dev server** | `make dev-backend` | `.\scripts\dev.ps1 dev-backend` |
+| **Run all linters** | `make lint` | `.\scripts\dev.ps1 lint` |
+| **Run code formatters** | `make format` | `.\scripts\dev.ps1 format` |
+| **Run all tests** | `make test` | `.\scripts\dev.ps1 test` |
+| **Run backend tests** | `make test-backend` | `.\scripts\dev.ps1 test-backend` |
+| **Run frontend tests** | `make test-frontend` | `.\scripts\dev.ps1 test-frontend` |
+| **Clean cache files** | `make clean` | `.\scripts\dev.ps1 clean` |
 
 ---
 
@@ -291,76 +362,68 @@ All error responses across all API endpoints return a standardized JSON structur
 ```
 
 Common error codes:
-* `INVALID_USERNAME` (HTTP 400): Username violates GitHub format constraints.
-* `NOT_FOUND` (HTTP 404): Requested GitHub user or resource not found.
-* `VALIDATION_ERROR` (HTTP 422): Request parameters or body payload failed schema validation.
-* `RATE_LIMIT_EXCEEDED` (HTTP 429): Upstream GitHub rate limit reached; includes `reset_at` timestamp.
-* `INTERNAL_SERVER_ERROR` (HTTP 500): Unhandled exception during processing.
+- `INVALID_USERNAME` (HTTP 400): Username violates GitHub format constraints.
+- `NOT_FOUND` (HTTP 404): Requested GitHub user or resource not found.
+- `VALIDATION_ERROR` (HTTP 422): Request parameters or body payload failed schema validation.
+- `RATE_LIMIT_EXCEEDED` (HTTP 429): Upstream GitHub rate limit reached; includes `reset_at` timestamp.
+- `INTERNAL_SERVER_ERROR` (HTTP 500): Unhandled exception during processing.
 
 ---
 
-## 🔐 Environment Variables
+## Environment Variables
 
 OpenSourceMate uses environment variables to configure the Next.js frontend and FastAPI backend.
 
 ### Key Guidelines
 
 - **Zero-credential local setup**: All variables have safe defaults. You can run the entire frontend and backend locally without supplying any external API keys or tokens.
-- **Optional features**: Integrations such as higher GitHub API rate limits and AI-assisted issue analysis are optional. If you wish to test or develop these features, you must provide your own credentials.
+- **Optional features**: Integrations such as higher GitHub API rate limits, AI-assisted issue analysis, and semantic matching are optional. If you wish to test or develop these features, you can provide your own credentials.
 - **Secret security**: **Never commit `.env` or `.env.local` files, API keys, passwords, or personal access tokens to Git.** These files are ignored by `.gitignore`.
 
-### Template Setup Instructions
+### Setup Instructions
 
-Each component includes a `.env.example` template with supported variables. Copy the templates to initialize your local environment files:
+To configure your local environment:
 
-#### From the Repository Root
-
-**Windows (PowerShell):**
-
-```powershell
-Copy-Item backend\.env.example backend\.env
-Copy-Item frontend\.env.example frontend\.env.local
-```
-
-**macOS / Linux:**
-
-```bash
-cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env.local
-```
-
-#### From Component Directories
-
-If you are already inside the `backend/` or `frontend/` directory:
-
-- **Backend (`backend/`):**
-  - Windows (PowerShell): `Copy-Item .env.example .env`
-  - macOS / Linux: `cp .env.example .env`
-- **Frontend (`frontend/`):**
-  - Windows (PowerShell): `Copy-Item .env.example .env.local`
-  - macOS / Linux: `cp .env.example .env.local`
-
-> **Note for Frontend:** Next.js loads local overrides from `.env.local`. Do not name the frontend file `.env` if you want local development overrides to follow Next.js conventions.
+1. **Copy `backend/.env.example` to `backend/.env`:**
+   - Windows (PowerShell): `Copy-Item backend\.env.example backend\.env`
+   - macOS / Linux: `cp backend/.env.example backend/.env`
+2. **Copy `frontend/.env.example` to `frontend/.env.local`:**
+   - Windows (PowerShell): `Copy-Item frontend\.env.example frontend\.env.local`
+   - macOS / Linux: `cp frontend/.env.example frontend/.env.local`
+   *(Note: Next.js loads environment variables from `.env`, `.env.development`, and `.env.local`. For local development, copying to `.env.local` is recommended because it takes precedence and is excluded from source control by default).*
+3. **Replace placeholder values with your own credentials:**
+   - Edit the newly created `.env` files and replace placeholder values with your own API keys or tokens (e.g., `GITHUB_TOKEN` for higher rate limits or `AI_API_KEY` for AI analysis).
+4. **Configure the correct backend API URL:**
+   - Verify `NEXT_PUBLIC_API_URL` in `frontend/.env.local` points to your backend instance (`http://localhost:8000` for local development).
+5. **Never commit actual `.env` files or credentials:**
+   - Ensure local `.env` and `.env.local` files remain uncommitted and untracked.
 
 ### Supported Environment Variables
 
-| Variable | Location | Required? | Description |
+| Variable | Location | Required | Description |
 |---|---|---|---|
-| `ENVIRONMENT` | `backend/.env` | No | Target runtime environment: `development` (default), `production`, or `testing`. Controls security assertions and defaults. |
-| `DEBUG` | `backend/.env` | No | Enables FastAPI debug mode. In development, defaults to `True`. In production, strictly defaults to `False` (setting `True` in production fails loudly). |
-| `SECRET_KEY` | `backend/.env` | Dev: No, Prod: **Yes** | Cryptographic secret key. In development, a default dev key is used. In production, **strictly required** (minimum 16 characters); startup fails loudly if unset or default. |
-| `ALLOWED_HOSTS` | `backend/.env` | No | Comma-separated list of allowed HTTP Host headers for `TrustedHostMiddleware`. Safe default: `*` (permits all hosts). In production, configure exact domain names. |
-| `CORS_ORIGINS` | `backend/.env` | No | Comma-separated list of allowed frontend origins. Default: `http://localhost:3000,http://127.0.0.1:3000,https://open-source-mate-tawny.vercel.app`. |
-| `CORS_ALLOW_CREDENTIALS` | `backend/.env` | No | Boolean indicating whether cross-origin cookies and authorization headers are supported. Safe default: `False`. |
-| `CORS_ALLOW_METHODS` | `backend/.env` | No | Comma-separated list of permitted HTTP methods. Default: `*`. |
-| `CORS_ALLOW_HEADERS` | `backend/.env` | No | Comma-separated list of permitted HTTP headers. Default: `*`. |
-| `NEXT_PUBLIC_API_URL` | `frontend/.env.local` | No | Base URL of the FastAPI backend server accessed by the Next.js frontend. Safe default: `http://localhost:8000`. No credentials needed. |
-| `GITHUB_TOKEN` | `backend/.env` | No | GitHub Personal Access Token (classic or fine-grained). Raises GitHub REST API rate limits from 60 to 5,000 requests/hour. Safe default: empty (unauthenticated requests). To obtain one, navigate to GitHub **Settings > Developer Settings > Personal access tokens** and generate a token (public read-only access is sufficient). |
-| `GITHUB_CACHE_TTL` | `backend/.env` | No | In-memory cache duration (in seconds) for GitHub profile and repository API responses. Safe default: `300` (5 minutes). Set to `0` to disable in-memory caching during development. No credentials needed. |
-| `AI_API_KEY` | `backend/.env` | No | OpenAI API key used for optional AI-powered issue analysis (`/api/ai/analyze-issue`). Safe default: empty (AI analysis endpoints return graceful fallback recommendations without errors). To obtain one, generate an API key at [platform.openai.com](https://platform.openai.com/). |
-| `AI_MODEL` | `backend/.env` | No | Model name passed to OpenAI when `AI_API_KEY` is set. Safe default: `gpt-4o-mini`. No credentials needed. |
+| `ENVIRONMENT` | `backend/.env` | Dev: No, Prod: No | Target runtime environment: `development` (default), `production`, or `testing`. Controls security assertions and defaults. |
+| `DEBUG` | `backend/.env` | Dev: No, Prod: No | Enables FastAPI debug mode. In development, defaults to `True`. In production, strictly defaults to `False` (setting `True` in production fails loudly). |
+| `SECRET_KEY` | `backend/.env` | Dev: No, Prod: **Yes** | Cryptographic secret key for signing and security. In development, a default dev key is used. In production, **strictly required** (minimum 16 characters); startup fails loudly if unset or default. |
+| `ALLOWED_HOSTS` | `backend/.env` | Dev: No, Prod: No | Comma-separated list or JSON array of allowed HTTP Host headers for `TrustedHostMiddleware`. Safe default: `["*"]` (permits all hosts). In production, configure exact domain names. |
+| `CORS_ORIGINS` | `backend/.env` | Dev: No, Prod: No | Comma-separated list or JSON array of allowed frontend origins. Default: `["http://localhost:3000", "http://127.0.0.1:3000", "https://open-source-mate-tawny.vercel.app"]`. |
+| `CORS_ALLOW_CREDENTIALS` | `backend/.env` | Dev: No, Prod: No | Boolean indicating whether cross-origin cookies and authorization headers are supported. Safe default: `False`. |
+| `CORS_ALLOW_METHODS` | `backend/.env` | Dev: No, Prod: No | Comma-separated list or JSON array of permitted HTTP methods. Default: `["*"]`. |
+| `CORS_ALLOW_HEADERS` | `backend/.env` | Dev: No, Prod: No | Comma-separated list or JSON array of permitted HTTP headers. Default: `["*"]`. |
+| `GITHUB_TOKEN` | `backend/.env` | Dev: No, Prod: No | GitHub Personal Access Token (classic or fine-grained). Raises GitHub REST API rate limits from 60 to 5,000 requests/hour. Safe default: empty (unauthenticated requests). To obtain one, navigate to GitHub **Settings > Developer Settings > Personal access tokens** and generate a token (public read-only access is sufficient). |
+| `GITHUB_CACHE_TTL` | `backend/.env` | Dev: No, Prod: No | In-memory cache duration (in seconds) for GitHub profile and repository API responses. Safe default: `300` (5 minutes). Set to `0` to disable in-memory caching during development. |
+| `GITHUB_MAX_REPO_PAGES` | `backend/.env` | Dev: No, Prod: No | Maximum number of pagination calls permitted per user profile fetch. Safe default: `3`. |
+| `GITHUB_REPOS_PER_PAGE` | `backend/.env` | Dev: No, Prod: No | Number of repositories requested per page from the GitHub API (maximum allowed by GitHub is 100). Safe default: `100`. |
+| `GITHUB_MAX_REPOS_CAP` | `backend/.env` | Dev: No, Prod: No | Sensible ceiling for total repositories analyzed per user profile. Safe default: `300`. |
+| `AI_API_KEY` | `backend/.env` | Dev: No, Prod: No | OpenAI API key used for optional AI-powered issue analysis (`/api/ai/analyze-issue`). Safe default: empty (AI analysis endpoints return graceful fallback recommendations without errors). To obtain one, generate an API key at [platform.openai.com](https://platform.openai.com/). |
+| `AI_MODEL` | `backend/.env` | Dev: No, Prod: No | Model name passed to OpenAI when `AI_API_KEY` is set. Safe default: `gpt-4o-mini`. |
+| `GEMINI_API_KEY` | `backend/.env` | Dev: No, Prod: No | Optional Google Gemini API key supported by `AISettings`. Safe default: empty. |
+| `OSM_MAX_EXPLANATION_WORDS` | `backend/.env` | Dev: No, Prod: No | Maximum word count for AI-generated issue match explanations. Safe default: `50`. |
+| `OSM_USE_EMBEDDINGS` | `backend/.env` | Dev: No, Prod: No | Flag (`true`/`false`) to enable optional semantic sentence-transformers embeddings for issue matching. Safe default: `false`. |
+| `NEXT_PUBLIC_API_URL` | `frontend/.env.local` | Dev: No, Prod: **Yes** | Base URL of the FastAPI backend server accessed by the Next.js frontend. Safe default: `http://localhost:8000`. In production, set to your deployed backend API URL. |
 
-> **Dev vs. Production Separation:**
+> **Framework & Dev/Prod Notes:**
+> - The backend is implemented in **FastAPI** using Pydantic Settings, not Django. Django-specific settings are not used.
 > - In **development** (`ENVIRONMENT=development`), `DEBUG` defaults to `True` and an insecure default `SECRET_KEY` is allowed so developers can run `uvicorn app.main:app --reload` immediately without configuration.
 > - In **production** (`ENVIRONMENT=production`), the application enforces strict production invariants: `DEBUG` must be `False`, and `SECRET_KEY` must be a high-entropy string of at least 16 characters. If `SECRET_KEY` is unset, empty, or using the default key, the application **fails loudly on startup** with a descriptive `ValueError`.
 > - Never expose server-side credentials or API keys in the frontend (`NEXT_PUBLIC_*`). Only public configuration (such as the backend API URL) should be placed in `frontend/.env.local`.
@@ -416,9 +479,29 @@ Personalized Opportunities
 
 ---
 
+## 🧹 Code Quality, Linting & Pre-Commit
+
+OpenSourceMate uses automated code quality tools to maintain clean and reliable code:
+
+- **Pre-Commit**: Automated Git pre-commit hooks configured via `.pre-commit-config.yaml`.
+  ```bash
+  # Install pre-commit hook into your local git repository
+  cd backend && pip install -r requirements-dev.txt
+  pre-commit install
+
+  # Run pre-commit checks manually on all files
+  pre-commit run --all-files
+  ```
+- **Backend (Python)**: [Ruff](https://docs.astral.sh/ruff/) for linting and formatting (`ruff check backend`, `ruff format backend`).
+- **Frontend (TypeScript/Next.js)**: [Prettier](https://prettier.io/) and [ESLint](https://eslint.org/) (`npm run format:check`, `npm run lint`, `npx tsc --noEmit`).
+
+See the [Linting and Formatting Guide](docs/linting-and-formatting.md) for full instructions.
+
+---
+
 ## 🤝 Contributing
 
-* See the [Label Guide](docs/LABELS.md) to find an issue that fits your skills.
+- See the [Label Guide](docs/LABELS.md) to find an issue that fits your skills.
 
 OpenSourceMate is being built as an open-source project, and contributions are welcome.
 
@@ -448,12 +531,26 @@ git push origin feature/your-feature
 
 Then open a pull request describing:
 
-* What you changed
-* Why you changed it
-* How you tested it
-* Any relevant screenshots or examples
+- What you changed
+- Why you changed it
+- How you tested it
+- Any relevant screenshots or examples
 
 For detailed guidelines on setup, branch naming, PR conventions, and coding standards, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+---
+
+## 👥 Contributors
+
+Thanks goes to these wonderful people for contributing to OpenSourceMate:
+
+<p align="left">
+  <a href="https://github.com/Muskankr/OpenSourceMate/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=Muskankr/OpenSourceMate" alt="Contributors" />
+  </a>
+</p>
+
+Contributions of any kind are welcome! Please check out [CONTRIBUTING.md](CONTRIBUTING.md) to get started.
 
 ---
 
@@ -463,12 +560,12 @@ Found a bug or have an idea?
 
 Open an issue and include:
 
-* A clear title
-* Description of the problem or feature
-* Steps to reproduce, when applicable
-* Expected behavior
-* Actual behavior
-* Screenshots or logs when useful
+- A clear title
+- Description of the problem or feature
+- Steps to reproduce, when applicable
+- Expected behavior
+- Actual behavior
+- Screenshots or logs when useful
 
 For larger changes, discuss the idea before starting implementation.
 
@@ -482,11 +579,11 @@ A dedicated security reporting process will be documented as the project matures
 
 Never include:
 
-* API keys
-* Access tokens
-* Passwords
-* Personal credentials
-* Private repository information
+- API keys
+- Access tokens
+- Passwords
+- Personal credentials
+- Private repository information
 
 in issues or pull requests.
 
@@ -496,11 +593,11 @@ in issues or pull requests.
 
 Open-source contribution can be difficult to navigate, especially for developers who are unsure:
 
-* Which projects match their skills?
-* Which issues are suitable for their experience?
-* How difficult is an issue?
-* What does a repository actually need?
-* Where should they start?
+- Which projects match their skills?
+- Which issues are suitable for their experience?
+- How difficult is an issue?
+- What does a repository actually need?
+- Where should they start?
 
 OpenSourceMate aims to reduce that discovery barrier by connecting a developer's existing technical experience with meaningful open-source contribution opportunities.
 
@@ -527,7 +624,7 @@ There are many potential areas for contributors:
 
 This project is licensed under the **MIT License**.
 
-See the `LICENSE` file for details.
+See the [LICENSE](LICENSE) file for details.
 
 ---
 
@@ -535,11 +632,11 @@ See the `LICENSE` file for details.
 
 If you find OpenSourceMate useful or are interested in its development:
 
-* ⭐ Star the repository
-* 🐛 Report bugs
-* 💡 Suggest features
-* 🔧 Submit pull requests
-* 📖 Improve documentation
+- ⭐ Star the repository
+- 🐛 Report bugs
+- 💡 Suggest features
+- 🔧 Submit pull requests
+- 📖 Improve documentation
 
 Every contribution helps make open-source participation easier for developers.
 
