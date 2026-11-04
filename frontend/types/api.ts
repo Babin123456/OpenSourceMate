@@ -57,6 +57,8 @@ export interface IssueRecommendation {
   reasons?: string[];
   explanation?: string;
   is_ai_generated?: boolean;
+  difficulty?: "Beginner" | "Intermediate" | "Advanced";
+  is_mock?: boolean;
 }
 
 export interface MatchedIssuesResponse {
