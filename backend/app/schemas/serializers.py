@@ -109,6 +109,10 @@ class ExtendedGitHubUserProfileSerializer(GitHubUserProfileSerializer):
         default=None, description="Account creation timestamp"
     )
     public_gists: int = Field(default=0, description="Public gist count")
+    fetched_at: str | None = Field(
+        default=None,
+        description="ISO 8601 UTC timestamp when profile was retrieved (Issue #132)",
+    )
 
 
 class RepositoryItemSerializer(BaseModel):
@@ -140,6 +144,10 @@ class RepositoryListSerializer(BaseModel):
     )
     has_more: bool = Field(
         default=False, description="Whether more repositories exist beyond the pagination cap"
+    )
+    fetched_at: str | None = Field(
+        default=None,
+        description="ISO 8601 UTC timestamp when repositories were retrieved (Issue #132)",
     )
     repositories: list[RepositoryItemSerializer] = Field(
         default_factory=list, description="Repository list"
@@ -198,6 +206,10 @@ class UserSkillsSerializer(BaseModel):
     groups: dict[str, list[str]] | None = Field(
         default=None,
         description="Mapping of active technology groups to present constituent skills (Issue #130)",
+    )
+    analyzed_at: str | None = Field(
+        default=None,
+        description="ISO 8601 UTC timestamp indicating when this skill analysis was generated (Issue #132)",
     )
 
 

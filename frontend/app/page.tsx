@@ -5,7 +5,7 @@ import ExportMenu from "../components/ExportMenu";
 import GitHubLink from "../components/GitHubLink";
 import ProfileCard from "../components/ProfileCard";
 import RecentSearches from "../components/RecentSearches";
-import ServiceUnavailableBanner from "../components/ServiceUnavailableBanner";
+import RefreshAnalysisButton from "../components/RefreshAnalysisButton";
 import SkillChart from "../components/SkillChart";
 import SkillProficiencyBadge from "../components/SkillProficiencyBadge";
 import IssueCard from "../components/IssueCard";
@@ -133,6 +133,7 @@ export default function Home() {
 
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [skills, setSkills] = useState<SkillsData | null>(null);
@@ -364,6 +365,28 @@ export default function Home() {
       setError(sanitizeErrorMessage(resolveAnalyzerErrorMessage(err)));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    if (!profile?.username || loading || isRefreshing) return;
+    setIsRefreshing(true);
+    const searchSignal = createSearchSignal();
+    try {
+      const [profileData, skillsData] = await Promise.all([
+        fetchUserProfile(profile.username, { signal: searchSignal, refresh: true }),
+        fetchUserSkills(profile.username, { signal: searchSignal, refresh: true }),
+      ]);
+      setProfile(profileData);
+      setSkills(skillsData);
+      fetchMatchedIssues(profile.username, searchSignal);
+    } catch (err: unknown) {
+      if (isAbortError(err)) return;
+      if (err instanceof ApiClientError && err.status === 429) {
+        setError(resolveAnalyzerErrorMessage(429, { resetAt: err.resetAt }));
+      }
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -812,17 +835,13 @@ export default function Home() {
                   </div>
 
                   {profile && (
-                    <div className="flex flex-wrap items-center gap-3">
-                      <Link
-                        href={`/compare?user1=${encodeURIComponent(profile.username)}`}
-                        className={`inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-xs font-semibold transition ${
-                          theme === "dark"
-                            ? "border-white/10 bg-white/5 text-gray-200 hover:bg-white/10"
-                            : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
-                        }`}
-                      >
-                        Compare Profile &rarr;
-                      </Link>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <RefreshAnalysisButton
+                        analyzedAt={skills?.analyzed_at || profile?.fetched_at}
+                        onRefresh={handleRefresh}
+                        isLoading={isRefreshing}
+                        theme={theme}
+                      />
                       <ExportMenu onExport={handleExport} />
                     </div>
                   )}

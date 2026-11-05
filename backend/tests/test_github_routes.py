@@ -56,22 +56,21 @@ def test_get_user_valid():
     with patch_user(USER):
         response = client.get("/api/github/users/octocat")
     assert response.status_code == 200
-    assert response.json() == {
-        "username": "octocat",
-        "name": "The Octocat",
-        "bio": "hi",
-        "avatar_url": "https://example.com/a.png",
-        "public_repositories": 3,
-        "followers": 10,
-        "following": 2,
-        "profile_url": "https://github.com/octocat",
-        "location": "San Francisco, CA",
-        "company": "@github",
-        "blog": "https://github.blog",
-        "twitter_username": "github",
-        "created_at": "2011-01-25T18:44:36Z",
-        "public_gists": 8,
-    }
+    body = response.json()
+    assert body["username"] == "octocat"
+    assert body["name"] == "The Octocat"
+    assert body["bio"] == "hi"
+    assert body["avatar_url"] == "https://example.com/a.png"
+    assert body["public_repositories"] == 3
+    assert body["followers"] == 10
+    assert body["following"] == 2
+    assert body["profile_url"] == "https://github.com/octocat"
+    assert body["location"] == "San Francisco, CA"
+    assert body["company"] == "@github"
+    assert body["blog"] == "https://github.blog"
+    assert body["twitter_username"] == "github"
+    assert body["created_at"] == "2011-01-25T18:44:36Z"
+    assert body["public_gists"] == 8
 
 
 def test_get_user_sparse_profile():
@@ -186,11 +185,11 @@ def test_skills_valid():
 def test_skills_zero_repos():
     with patch_repos([]):
         response = client.get("/api/github/users/octocat/skills")
-    assert response.json() == {
-        "username": "octocat",
-        "skills": [],
-        "total_repositories_analyzed": 0,
-    }
+    assert response.status_code == 200
+    body = response.json()
+    assert body["username"] == "octocat"
+    assert body["skills"] == []
+    assert body["total_repositories_analyzed"] == 0
 
 
 def test_skills_all_languages_none():
