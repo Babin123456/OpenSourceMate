@@ -37,11 +37,27 @@ export const metadata: Metadata = {
     siteName: "OpenSourceMate",
     url: siteUrl,
     type: "website",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: siteTitle,
+      },
+    ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: siteTitle,
     description: siteDescription,
+    images: [
+      {
+        url: "/twitter-image",
+        width: 1200,
+        height: 630,
+        alt: siteTitle,
+      },
+    ],
   },
 };
 
