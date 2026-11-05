@@ -7,9 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "test": "jest"
+    "test": "jest",
+    "mock-server": "node scripts/mock-server.mjs"
   },
   "dependencies": {
     "next": "16.4.3",

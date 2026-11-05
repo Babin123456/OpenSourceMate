@@ -18,6 +18,7 @@ export interface GitHubUserProfile {
   twitter_username?: string | null;
   created_at?: string;
   public_gists?: number;
+  fetched_at?: string;
 }
 
 export type ProficiencyLevel = "Learning" | "Comfortable" | "Strong";
@@ -38,6 +39,7 @@ export interface UserSkillsResponse {
   username: string;
   skills: SkillItem[];
   total_repositories_analyzed: number;
+  analyzed_at?: string;
 }
 
 export interface IssueRecommendation {
@@ -57,7 +59,7 @@ export interface IssueRecommendation {
   reasons?: string[];
   explanation?: string;
   is_ai_generated?: boolean;
-  difficulty?: "Beginner" | "Intermediate" | "Advanced";
+  difficulty?: string;
   is_mock?: boolean;
 }
 

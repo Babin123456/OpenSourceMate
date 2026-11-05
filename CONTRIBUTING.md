@@ -145,6 +145,21 @@ OpenSourceMate/
    ```
    Open `http://localhost:3000` in your browser.
 
+### 4. Offline Frontend Development (Mock API)
+
+You can develop and test the frontend completely offline without running the backend server or needing a GitHub token:
+
+- **Browser Mocking**: Start Next.js with mocking enabled:
+  ```bash
+  NEXT_PUBLIC_USE_MOCKS=true npm run dev
+  ```
+- **Lightweight Mock Server**: Run the Node.js mock API server on port 8000:
+  ```bash
+  npm run mock-server
+  ```
+
+See the [Mock API Guide](docs/mock-api.md) for test fixtures (`octocat`, `torvalds`, `not-found`, `rate-limited`).
+
 ---
 
 ## Environment Configuration
@@ -158,6 +173,7 @@ OpenSourceMate/
 ### Frontend (`frontend/.env.local`)
 
 - `NEXT_PUBLIC_API_URL`: Backend API base URL (defaults to `http://localhost:8000`).
+- `NEXT_PUBLIC_USE_MOCKS`: *(Optional)* Set to `true` to run offline using realistic mock API fixtures.
 
 ---
 
