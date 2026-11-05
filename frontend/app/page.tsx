@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ExportMenu from "../components/ExportMenu";
 import GitHubLink from "../components/GitHubLink";
 import ProfileCard from "../components/ProfileCard";
@@ -79,6 +79,57 @@ export default function Home() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [mobileMenuOpen]);
+
+  const [activeSection, setActiveSection] = useState<string>("analyzer");
+  const usernameInputRef = useRef<HTMLInputElement>(null);
+
+  // Global keyboard shortcut: pressing "/" focuses the username input (ignored while typing in inputs)
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "/" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const activeEl = document.activeElement;
+        const isEditing =
+          activeEl instanceof HTMLInputElement ||
+          activeEl instanceof HTMLTextAreaElement ||
+          activeEl instanceof HTMLSelectElement ||
+          (activeEl as HTMLElement)?.isContentEditable;
+        if (!isEditing) {
+          e.preventDefault();
+          usernameInputRef.current?.focus();
+          usernameInputRef.current?.select();
+        }
+      }
+    };
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+  }, []);
+
+  // IntersectionObserver for active section highlighting in the navbar
+  useEffect(() => {
+    const sectionIds = ["analyzer", "how-it-works"];
+    const elements = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null);
+
+    if (elements.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+          }
+        });
+      },
+      {
+        rootMargin: "-20% 0px -60% 0px",
+        threshold: 0,
+      }
+    );
+
+    elements.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
 
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
@@ -370,14 +421,24 @@ export default function Home() {
             >
               <a
                 href="#how-it-works"
-                className="rounded-lg px-2 py-1 transition hover:text-purple-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
+                aria-current={activeSection === "how-it-works" ? "location" : undefined}
+                className={`rounded-lg px-2 py-1 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 ${
+                  activeSection === "how-it-works"
+                    ? "font-semibold text-purple-400 underline decoration-purple-400 decoration-2 underline-offset-8"
+                    : "hover:text-purple-400"
+                }`}
               >
                 How it works
               </a>
 
               <a
                 href="#analyzer"
-                className="rounded-lg px-2 py-1 transition hover:text-purple-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
+                aria-current={activeSection === "analyzer" ? "location" : undefined}
+                className={`rounded-lg px-2 py-1 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 ${
+                  activeSection === "analyzer"
+                    ? "font-semibold text-purple-400 underline decoration-purple-400 decoration-2 underline-offset-8"
+                    : "hover:text-purple-400"
+                }`}
               >
                 Analyzer
               </a>
@@ -480,7 +541,12 @@ export default function Home() {
                 <a
                   href="#how-it-works"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="rounded-xl px-3 py-2 transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
+                  aria-current={activeSection === "how-it-works" ? "location" : undefined}
+                  className={`rounded-xl px-3 py-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 ${
+                    activeSection === "how-it-works"
+                      ? "bg-purple-500/10 font-semibold text-purple-400"
+                      : "hover:bg-white/10"
+                  }`}
                 >
                   How it works
                 </a>
@@ -488,7 +554,12 @@ export default function Home() {
                 <a
                   href="#analyzer"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="rounded-xl px-3 py-2 transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
+                  aria-current={activeSection === "analyzer" ? "location" : undefined}
+                  className={`rounded-xl px-3 py-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 ${
+                    activeSection === "analyzer"
+                      ? "bg-purple-500/10 font-semibold text-purple-400"
+                      : "hover:bg-white/10"
+                  }`}
                 >
                   Analyzer
                 </a>
@@ -586,6 +657,7 @@ export default function Home() {
                     </label>
 
                     <input
+                      ref={usernameInputRef}
                       id="github-username-input"
                       type="text"
                       placeholder="Enter your GitHub username"
@@ -614,6 +686,14 @@ export default function Home() {
                           : "text-gray-900 placeholder:text-gray-500"
                       }`}
                     />
+
+                    <kbd
+                      className="hidden items-center rounded border border-white/20 bg-white/5 px-2 py-0.5 font-mono text-xs text-gray-400 sm:inline-flex"
+                      title="Press / to focus search"
+                      aria-label="Keyboard shortcut: press / to focus search"
+                    >
+                      /
+                    </kbd>
                   </div>
 
                   <button
