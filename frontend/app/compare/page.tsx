@@ -142,15 +142,11 @@ function CompareContent() {
   );
 }
 
+import CompareSkeleton from "../../components/CompareSkeleton";
+
 export default function ComparePage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-screen items-center justify-center bg-[#05070d] text-white">
-          <p className="text-sm font-medium animate-pulse">Loading comparison tool...</p>
-        </div>
-      }
-    >
+    <Suspense fallback={<CompareSkeleton />}>
       <CompareContent />
     </Suspense>
   );
