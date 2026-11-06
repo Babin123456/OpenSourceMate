@@ -513,5 +513,5 @@ async def fetch_merged_external_pull_requests(
         "recent_prs": recent_prs[:5],
     }
 
-    cache.set(cache_key, result, ttl_seconds=900)
+    cache.set(cache_key, result, ttl=900)
     return result
