@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 
 export interface Profile {
   username: string;
@@ -113,10 +114,13 @@ export default function ProfileCard({ profile, onExport, className = "" }: Profi
             {/* Avatar with fallback */}
             <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl border-2 border-white/10 bg-white/5 sm:h-24 sm:w-24">
               {!imgError && profile.avatar_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={profile.avatar_url}
                   alt={`${displayName}'s avatar`}
+                  width={96}
+                  height={96}
+                  sizes="(max-width: 640px) 80px, 96px"
+                  priority
                   onError={() => setImgError(true)}
                   className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
                 />
