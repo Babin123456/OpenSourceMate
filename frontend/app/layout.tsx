@@ -27,7 +27,10 @@ const siteDescription =
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: siteTitle,
+  title: {
+    default: siteTitle,
+    template: "%s | OpenSourceMate",
+  },
   description: siteDescription,
   applicationName: "OpenSourceMate",
   alternates: {
