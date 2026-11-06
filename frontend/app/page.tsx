@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import GitHubLink from "../components/GitHubLink";
 import FAQ from "../components/FAQ";
@@ -70,6 +70,8 @@ async function rateLimitMessage(response: Response): Promise<string> {
   return "GitHub API rate limit reached. Please try again in a few minutes.";
 }
 
+const EXAMPLE_USERNAMES = ["torvalds", "gaearon", "sindresorhus"];
+
 export default function Home() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const [theme, setTheme] = useState<"dark" | "light">("dark");
@@ -91,6 +93,7 @@ useEffect(() => {
   localStorage.setItem("theme", theme);
 }, [theme]);
   const [username, setUsername] = useState("");
+  const usernameInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
 
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -480,7 +483,9 @@ useEffect(() => {
                 </span>
 
                 <input
+                  ref={usernameInputRef}
                   type="text"
+                  aria-label="GitHub username"
                   placeholder="Enter your GitHub username"
                   value={username}
                   onChange={(e) => {
@@ -511,6 +516,30 @@ useEffect(() => {
 
             </div>
 
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs">
+            <span className={theme === "dark" ? "text-gray-500" : "text-gray-600"}>
+              Try an example:
+            </span>
+            {EXAMPLE_USERNAMES.map((example) => (
+              <button
+                key={example}
+                type="button"
+                onClick={() => {
+                  setUsername(example);
+                  analyzeProfile(example);
+                }}
+                disabled={loading}
+                className={`rounded-full border px-3 py-1 font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${
+                  theme === "dark"
+                    ? "border-white/10 bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white"
+                    : "border-gray-200 bg-white text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                @{example}
+              </button>
+            ))}
           </div>
 
           {error && (
@@ -870,6 +899,7 @@ useEffect(() => {
               document
                 .getElementById("analyzer")
                 ?.scrollIntoView({ behavior: "smooth" });
+              usernameInputRef.current?.focus({ preventScroll: true });
             }}
             className="mt-8 rounded-xl bg-white px-6 py-3.5 text-sm font-semibold text-black transition hover:bg-gray-200"
           >
