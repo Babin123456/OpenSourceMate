@@ -66,6 +66,13 @@ class Settings(BaseSettings):
     github_retry_backoff_factor: float = 0.5
 
     # -------------------------------------------------------------------------
+    # API Rate Limiting Configuration (Issue #197)
+    # -------------------------------------------------------------------------
+    api_rate_limit_enabled: bool = True
+    api_rate_limit_per_minute: int = 60
+    api_rate_limit_burst: int = 25
+
+    # -------------------------------------------------------------------------
     # AI Analysis Configuration
     # -------------------------------------------------------------------------
     ai_api_key: str | None = None
