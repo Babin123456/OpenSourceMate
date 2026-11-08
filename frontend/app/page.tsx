@@ -731,6 +731,26 @@ export default function Home() {
                   </button>
                 </div>
 
+                <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs">
+                  <span className={theme === "dark" ? "text-gray-400" : "text-gray-600"}>
+                    Try an example:
+                  </span>
+                  {["torvalds", "gaearon", "sindresorhus"].map((example) => (
+                    <button
+                      key={example}
+                      type="button"
+                      disabled={loading}
+                      onClick={() => {
+                        setUsername(example);
+                        analyzeProfile(example);
+                      }}
+                      className="rounded-full border border-white/15 bg-white/5 px-3 py-1 font-medium transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      @{example}
+                    </button>
+                  ))}
+                </div>
+
                 <RecentSearches
                   searches={recentSearches}
                   onSelect={handleSelectRecent}
