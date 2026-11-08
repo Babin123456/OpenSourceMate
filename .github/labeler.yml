@@ -1,0 +1,73 @@
+# Labeler configuration for OpenSourceMate pull requests
+# Automatically categorizes pull requests based on changed paths.
+# References Issue #175 & docs/LABELS.md
+
+frontend:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'frontend/**'
+          - 'frontend/app/**'
+          - 'frontend/components/**'
+          - 'frontend/utils/**'
+          - 'frontend/types/**'
+          - 'frontend/mocks/**'
+          - 'frontend/data/**'
+          - 'frontend/public/**'
+          - 'frontend/__tests__/**'
+          - 'frontend/package.json'
+          - 'frontend/package-lock.json'
+          - 'frontend/tsconfig.json'
+          - 'frontend/tailwind.config.ts'
+          - 'frontend/postcss.config.mjs'
+          - 'frontend/next.config.ts'
+          - 'frontend/eslint.config.mjs'
+
+backend:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'backend/**'
+          - 'backend/app/**'
+          - 'backend/app/api/**'
+          - 'backend/app/api/routes/**'
+          - 'backend/app/services/**'
+          - 'backend/app/schemas/**'
+          - 'backend/app/core/**'
+          - 'backend/app/middleware/**'
+          - 'backend/app/utils/**'
+          - 'backend/app/ai/**'
+          - 'backend/tests/**'
+          - 'backend/requirements.txt'
+          - 'backend/Dockerfile'
+          - 'backend/pytest.ini'
+          - 'backend/ruff.toml'
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'docs/**'
+          - '*.md'
+          - '**/*.md'
+          - 'README.md'
+          - 'CONTRIBUTING.md'
+          - 'ARCHITECTURE.md'
+          - 'ROADMAP.md'
+          - 'SECURITY.md'
+          - 'FIRST_CONTRIBUTION.md'
+          - 'CODE_OF_CONDUCT.md'
+          - '.github/PULL_REQUEST_TEMPLATE.md'
+          - '.github/ISSUE_TEMPLATE/**'
+
+devops:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/**'
+          - '.github/workflows/**'
+          - '.github/labeler.yml'
+          - '.github/dependabot.yml'
+          - 'Dockerfile*'
+          - 'docker-compose*'
+          - '.dockerignore'
+          - '.gitignore'
+          - '.gitattributes'
+          - '.editorconfig'
+          - 'vercel.json'
