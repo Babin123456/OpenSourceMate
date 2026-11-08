@@ -88,7 +88,7 @@ for backward compatibility.
     redoc_url="/redoc",
     openapi_url="/openapi.json",
     openapi_tags=tags_metadata,
-    debug=settings.debug,
+    debug=bool(settings.debug),
     lifespan=lifespan,
     contact={
         "name": "OpenSourceMate Team",

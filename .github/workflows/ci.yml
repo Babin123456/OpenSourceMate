@@ -77,5 +77,8 @@ jobs:
       - name: Check formatting with ruff
         run: ruff format --check .
 
+      - name: Type check with mypy
+        run: mypy app --config-file mypy.ini
+
       - name: Run tests
         run: python -m pytest -q

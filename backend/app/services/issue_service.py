@@ -1,6 +1,7 @@
+from typing import Any
 from app.services.github_service import GITHUB_API_URL, github_get
 
-MAX_BODY_LENGTH = 1000
+MAX_BODY_LENGTH: int = 1000
 
 
 async def search_github_issues(
@@ -8,8 +9,8 @@ async def search_github_issues(
     label: str | None = None,
     keyword: str | None = None,
     per_page: int = 20,
-):
-    query_parts = [
+) -> dict[str, Any]:
+    query_parts: list[str] = [
         "is:issue",
         "is:open",
     ]
@@ -27,7 +28,7 @@ async def search_github_issues(
 
     url = f"{GITHUB_API_URL}/search/issues"
 
-    params = {
+    params: dict[str, Any] = {
         "q": query,
         "per_page": min(per_page, 100),
     }
@@ -38,7 +39,7 @@ async def search_github_issues(
 
     data = response.json()
 
-    issues = []
+    issues: list[dict[str, Any]] = []
 
     for issue in data["items"]:
         issues.append(

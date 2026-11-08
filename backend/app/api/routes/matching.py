@@ -1,3 +1,4 @@
+from typing import Any
 from fastapi import APIRouter, HTTPException, Query
 
 from app.ai.ai_service import generate_issue_match_explanation
@@ -107,7 +108,7 @@ async def get_matched_issues(
         )
 
     # Remove duplicate issues, keeping the best score.
-    unique_issues = {}
+    unique_issues: dict[int, dict[str, Any]] = {}
 
     for issue in all_issues:
         current = unique_issues.get(issue["id"])

@@ -64,7 +64,7 @@ async def test_middleware_allows_and_adds_headers():
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
-        response = await client.get("/api/v1")
+        response = await client.get("/api/v1", headers={"x-test-rate-limit": "1"})
         assert response.status_code == 200
         assert "x-ratelimit-limit" in response.headers
         assert "x-ratelimit-remaining" in response.headers
@@ -79,14 +79,14 @@ async def test_middleware_blocks_when_rate_exceeded():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         # Request 1 & 2 pass
-        r1 = await client.get("/api/v1")
+        r1 = await client.get("/api/v1", headers={"x-test-rate-limit": "1"})
         assert r1.status_code == 200
 
-        r2 = await client.get("/api/v1")
+        r2 = await client.get("/api/v1", headers={"x-test-rate-limit": "1"})
         assert r2.status_code == 200
 
         # Request 3 receives 429
-        r3 = await client.get("/api/v1")
+        r3 = await client.get("/api/v1", headers={"x-test-rate-limit": "1"})
         assert r3.status_code == 429
         data = r3.json()
         assert data["code"] == "IP_RATE_LIMIT_EXCEEDED"
@@ -102,5 +102,5 @@ async def test_health_endpoints_exempt_from_rate_limiting():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         for _ in range(5):
-            res = await client.get("/api/v1/health")
+            res = await client.get("/api/v1/health", headers={"x-test-rate-limit": "1"})
             assert res.status_code == 200

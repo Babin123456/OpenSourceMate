@@ -10,7 +10,7 @@ MAX_EMBEDDING_POINTS = 25
 _TOKEN = re.compile(r"[a-z0-9][a-z0-9+#.\-]*")
 
 
-def _tokens(text: str) -> list[str]:
+def _tokens(text: str | None) -> list[str]:
     return [t.strip(".-") for t in _TOKEN.findall((text or "").lower())]
 
 
@@ -27,7 +27,7 @@ def _skill_entries(user_skills: list) -> dict[str, float]:
     return entries
 
 
-def _issue_term_counts(issue: dict, skill_names: set[str]) -> Counter:
+def _issue_term_counts(issue: dict, skill_names: set[str]) -> Counter[str]:
     """Weighted mentions of each skill: title counts 3x, labels and repo name 2x, body 1x."""
     fields = (
         (issue.get("title"), 3),
@@ -35,7 +35,7 @@ def _issue_term_counts(issue: dict, skill_names: set[str]) -> Counter:
         (issue.get("repository"), 2),
         (issue.get("body"), 1),
     )
-    counts = Counter()
+    counts: Counter[str] = Counter()
 
     for text, weight in fields:
         tokens = _tokens(text)
@@ -110,7 +110,7 @@ def build_idf(issues: list[dict], user_skills: list) -> dict[str, float]:
     about which issue fits best, so it gets a lower weight than a rare one.
     """
     names = set(_skill_entries(user_skills))
-    document_frequency = Counter()
+    document_frequency: Counter[str] = Counter()
 
     for issue in issues:
         for name, count in _issue_term_counts(issue, names).items():

@@ -118,8 +118,10 @@ class IPRateLimitMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         settings = get_settings()
-        if not getattr(settings, "api_rate_limit_enabled", True):
-            return await call_next(request)
+        if not getattr(settings, "api_rate_limit_enabled", True) or getattr(settings, "environment", "") == "test":
+            # In test environment, only enforce when explicitly tested via header
+            if request.headers.get("x-test-rate-limit") != "1":
+                return await call_next(request)
 
         path = request.url.path
         # Skip exempt endpoints (health checks, OpenAPI docs)

@@ -3,6 +3,7 @@ from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from functools import lru_cache
 from pathlib import Path
+from typing import Any
 
 SKILL_MAPPINGS_FILE = (
     Path(__file__).resolve().parent.parent / "data" / "skill_mappings.json"
@@ -261,13 +262,13 @@ def analyze_skills(
     repo_details = repo_details or {}
     analyzed = [r for r in repositories if include_forks or not _is_fork(r)]
 
-    languages = Counter()
-    frameworks = Counter()
+    languages: Counter[str] = Counter()
+    frameworks: Counter[str] = Counter()
 
     # Track distinct repository occurrences per group to avoid double-counting
-    group_repo_counts = Counter()
-    group_subskills = defaultdict(set)
-    active_groups = defaultdict(list)
+    group_repo_counts: Counter[str] = Counter()
+    group_subskills: defaultdict[str, set[str]] = defaultdict(set)
+    active_groups: defaultdict[str, list[str]] = defaultdict(list)
     latest_update_by_skill: dict[str, str] = {}
 
     for repository in analyzed:
@@ -345,7 +346,7 @@ def analyze_skills(
         active_groups[grp] = sorted(list(members))
 
     language_total = sum(languages.values())
-    skills = []
+    skills: list[dict[str, Any]] = []
 
     if group_related:
         # Grouped Mode: Replace constituent member languages with their consolidated group
@@ -460,9 +461,9 @@ def analyze_skills(
 
     max_count = max((s["repository_count"] for s in skills), default=0)
 
-    for skill in skills:
-        skill["weight"] = (
-            round(skill["repository_count"] / max_count, 2) if max_count > 0 else 0.0
+    for item in skills:
+        item["weight"] = (
+            round(item["repository_count"] / max_count, 2) if max_count > 0 else 0.0
         )
 
     return {
