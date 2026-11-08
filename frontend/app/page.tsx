@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import ExportMenu from "../components/ExportMenu";
 import GitHubLink from "../components/GitHubLink";
@@ -132,6 +133,9 @@ export default function Home() {
     return () => observer.disconnect();
   }, []);
 
+  const pathname = usePathname();
+  const openedFromLink = useRef(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -366,6 +370,30 @@ export default function Home() {
       setError(sanitizeErrorMessage(resolveAnalyzerErrorMessage(err)));
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Shared result pages: /u/<username> runs the analysis straight away.
+  useEffect(() => {
+    if (openedFromLink.current) return;
+    const match = pathname?.match(/^\/u\/([^/]+)\/?$/);
+    if (!match) return;
+    openedFromLink.current = true;
+    const shared = decodeURIComponent(match[1]);
+    setUsername(shared);
+    analyzeProfile(shared);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  const copyShareLink = async () => {
+    if (!profile?.username) return;
+    const url = `${window.location.origin}/u/${encodeURIComponent(profile.username)}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      window.prompt("Copy this link", url);
     }
   };
 
@@ -863,6 +891,13 @@ export default function Home() {
                         isLoading={isRefreshing}
                         theme={theme}
                       />
+                      <button
+                        type="button"
+                        onClick={copyShareLink}
+                        className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-xs font-semibold transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
+                      >
+                        {linkCopied ? "Link copied" : "Copy link"}
+                      </button>
                       <ExportMenu onExport={handleExport} />
                     </div>
                   )}
