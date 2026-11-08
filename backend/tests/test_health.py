@@ -44,7 +44,9 @@ def test_health_diagnostics_success():
 
     async def make_request():
         transport = httpx.ASGITransport(app=app)
-        async with httpx.AsyncClient(transport=transport, base_url="https://test") as client:
+        async with httpx.AsyncClient(
+            transport=transport, base_url="https://test"
+        ) as client:
             return await client.get("/api/health/diagnostics")
 
     with patch("app.services.github_service.get_client") as mock_get_client:
@@ -69,12 +71,16 @@ def test_health_diagnostics_success():
 def test_health_diagnostics_degraded_when_github_fails():
     async def make_request():
         transport = httpx.ASGITransport(app=app)
-        async with httpx.AsyncClient(transport=transport, base_url="https://test") as client:
+        async with httpx.AsyncClient(
+            transport=transport, base_url="https://test"
+        ) as client:
             return await client.get("/api/health/diagnostics")
 
     with patch("app.services.github_service.get_client") as mock_get_client:
         mock_client = AsyncMock()
-        mock_client.get = AsyncMock(side_effect=httpx.ConnectError("Connection refused"))
+        mock_client.get = AsyncMock(
+            side_effect=httpx.ConnectError("Connection refused")
+        )
         mock_get_client.return_value = mock_client
 
         response = asyncio.run(make_request())
@@ -96,11 +102,15 @@ def test_health_diagnostics_token_masked():
 
     async def make_request():
         transport = httpx.ASGITransport(app=app)
-        async with httpx.AsyncClient(transport=transport, base_url="https://test") as client:
+        async with httpx.AsyncClient(
+            transport=transport, base_url="https://test"
+        ) as client:
             return await client.get("/api/health/diagnostics")
 
-    with patch("app.services.github_service.get_settings") as mock_settings, \
-         patch("app.services.github_service.get_client") as mock_get_client:
+    with (
+        patch("app.services.github_service.get_settings") as mock_settings,
+        patch("app.services.github_service.get_client") as mock_get_client,
+    ):
         mock_settings.return_value.github_token = "ghp_secretToken1234567890"
         mock_client = AsyncMock()
         mock_client.get = AsyncMock(return_value=mock_resp)
@@ -123,3 +133,18 @@ def test_cache_stats():
     cache.set("b", 2, ttl=60)
     assert cache.stats()["active_entries"] == 2
     assert cache.stats()["total_keys"] == 2
+
+
+def test_health_endpoint_trailing_slash():
+    async def make_request():
+        transport = httpx.ASGITransport(app=app)
+        async with httpx.AsyncClient(transport=transport, base_url="https://test") as client:
+            return await client.get("/api/health/")
+
+    response = asyncio.run(make_request())
+    assert response.status_code == 200
+    assert response.json() == {
+        "status": "healthy",
+        "service": "OpenSourceMate API",
+        "version": "0.1.0",
+    }

@@ -25,6 +25,11 @@ Thank you for your interest in contributing to **OpenSourceMate**! OpenSourceMat
 
 ---
 
+## Not sure where to start? Read the [Label Guide](docs/LABELS.md) and check our [Roadmap](ROADMAP.md).
+
+> 🐣 **First time contributing to open source or Git?** Check out our step-by-step [First Contribution Guide](FIRST_CONTRIBUTION.md) designed specifically for beginners!
+
+
 ## Code of Conduct
 
 We are committed to providing a friendly, safe, and welcoming environment for everyone, regardless of experience level, gender, sexual orientation, disability, personal appearance, body size, race, ethnicity, age, religion, or nationality.
@@ -140,17 +145,35 @@ OpenSourceMate/
    ```
    Open `http://localhost:3000` in your browser.
 
+### 4. Offline Frontend Development (Mock API)
+
+You can develop and test the frontend completely offline without running the backend server or needing a GitHub token:
+
+- **Browser Mocking**: Start Next.js with mocking enabled:
+  ```bash
+  NEXT_PUBLIC_USE_MOCKS=true npm run dev
+  ```
+- **Lightweight Mock Server**: Run the Node.js mock API server on port 8000:
+  ```bash
+  npm run mock-server
+  ```
+
+See the [Mock API Guide](docs/mock-api.md) for test fixtures (`octocat`, `torvalds`, `not-found`, `rate-limited`).
+
 ---
 
 ## Environment Configuration
 
 ### Backend (`backend/.env`)
-- `GITHUB_TOKEN`: *(Optional)* GitHub Personal Access Token (classic or fine-grained with read access to public repos). Highly recommended to avoid GitHub API rate limiting during development.
+
+- `GITHUB_TOKEN`: _(Optional)_ GitHub Personal Access Token (classic or fine-grained with read access to public repos). Highly recommended to avoid GitHub API rate limiting during development.
 - `GITHUB_CACHE_TTL`: Cache duration in seconds (default `300`).
-- `AI_API_KEY`: *(Optional)* For AI features.
+- `AI_API_KEY`: _(Optional)_ For AI features.
 
 ### Frontend (`frontend/.env.local`)
+
 - `NEXT_PUBLIC_API_URL`: Backend API base URL (defaults to `http://localhost:8000`).
+- `NEXT_PUBLIC_USE_MOCKS`: *(Optional)* Set to `true` to run offline using realistic mock API fixtures.
 
 ---
 
@@ -181,10 +204,13 @@ npm run lint
 ```
 
 To verify the production build:
+
 ```bash
 npm run build
-``` 
+```
+
 **Before opening a pull request**
+
 - Run the backend test suite when your changes affect backend behavior.
 - Run frontend lint when your changes affect frontend code.
 - Run relevant tests for any shared functionality you modify.
@@ -198,6 +224,7 @@ Do not claim that a check passed unless you actually ran it successfully.
 ## Development Workflow
 
 ### Claiming an Issue
+
 We welcome first-time contributors and experienced developers alike.
 
 1. Browse the repository's open issues and look for tasks that match your interests and experience. Start with issues labeled `good first issue` or help wanted, when available.
@@ -241,6 +268,7 @@ We follow the [Conventional Commits](https://www.conventionalcommits.org/) speci
 - `chore:` Tooling, dependency, or configuration updates
 
 Examples:
+
 - `feat(ui): add mobile navigation menu and drawer`
 - `fix(backend): handle 403 GitHub API rate limits gracefully`
 - `docs: add comprehensive CONTRIBUTING.md guide`
@@ -259,6 +287,56 @@ Examples:
    - Screenshots or GIFs for any UI changes
 4. Respond to feedback and make any requested revisions.
 
+### Updating the changelog
+
+Add a line to the `Unreleased` section of [CHANGELOG.md](CHANGELOG.md) when your pull request changes
+what users or contributors see: a new feature, a behaviour change, a bug fix, or a new setup step.
+Put it under `Added`, `Changed` or `Fixed` and keep it to one line. Typo fixes, refactors with no visible
+change and dependency bumps do not need an entry. Maintainers move the `Unreleased` entries under a
+version heading when a release is cut. Releases use the categories in [.github/release.yml](.github/release.yml),
+which GitHub reads from your issue and PR labels.
+
+---
+
+## Code Style, Linting & Pre-Commit Hooks
+
+We enforce automated code formatting and static analysis using pre-commit, Ruff (backend), and Prettier/ESLint (frontend).
+
+### Setting Up Pre-Commit Hooks
+
+1. Install development dependencies and the pre-commit git hook:
+
+   ```bash
+   cd backend
+   pip install -r requirements-dev.txt
+   pre-commit install
+   ```
+
+2. Run pre-commit across all files manually:
+   ```bash
+   pre-commit run --all-files
+   ```
+
+Pre-commit runs automatically before each commit, checking for trailing whitespace, newline endings, valid YAML, Ruff linting/formatting, and Prettier formatting.
+
+### Backend (Python / FastAPI)
+
+- **Linter & Formatter**: [Ruff](https://docs.astral.sh/ruff/) configured in `pyproject.toml`.
+- Run linter: `ruff check backend` (or `ruff check --fix backend`)
+- Run formatter: `ruff format backend` (or `ruff format --check backend`)
+- Run tests: `pytest`
+
+### Frontend (Next.js / TypeScript)
+
+- **Formatter**: [Prettier](https://prettier.io/) configured in `.prettierrc`.
+  - Format files: `npm run format`
+  - Check formatting: `npm run format:check`
+- **Linter**: ESLint configured with Next.js rules (`npm run lint`).
+- **Type Checking**: TypeScript compiler (`npx tsc --noEmit`).
+- **Tests**: Jest test suite (`npm test -- --ci`).
+
+For full details, refer to the [Linting and Formatting Guide](docs/linting-and-formatting.md).
+
 ---
 
 ## Code Style & Standards
@@ -272,6 +350,7 @@ Examples:
 ## Community & Getting Help
 
 If you have questions, run into issues, or want to discuss ideas:
+
 - Open an [Issue](https://github.com/Muskankr/OpenSourceMate/issues) on GitHub.
 - Clearly describe your question or suggestion.
 
