@@ -1,3 +1,7 @@
+import os
+
+os.environ["ENVIRONMENT"] = "test"
+
 import httpx
 import pytest
 
@@ -28,7 +32,12 @@ def github_mock(monkeypatch):
     monkeypatch.setattr(
         github_service,
         "get_settings",
-        lambda: Settings(_env_file=None, github_token=None, github_cache_ttl=300),
+        lambda: Settings(
+            _env_file=None,
+            github_token=None,
+            github_cache_ttl=300,
+            api_rate_limit_enabled=False,
+        ),
     )
 
     yield install

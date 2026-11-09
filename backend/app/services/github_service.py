@@ -4,6 +4,7 @@ import json
 import re
 import time
 from datetime import UTC, datetime
+from typing import Any
 
 import httpx
 
@@ -223,6 +224,8 @@ async def github_get(url: str, params: dict | None = None) -> httpx.Response:
                 continue
             raise
 
+    raise GitHubUpstreamError(url, 500, "Maximum retries exceeded")
+
 
 async def get_github_user(username: str, refresh: bool = False):
     key = f"github:user:{username.lower()}"
@@ -378,7 +381,7 @@ def _dependencies_from_manifest(filename: str, text: str) -> list[str]:
         if not isinstance(data, dict):
             return []
 
-        names = []
+        names: list[str] = []
         for section in ("dependencies", "devDependencies"):
             values = data.get(section)
             if isinstance(values, dict):
@@ -386,13 +389,13 @@ def _dependencies_from_manifest(filename: str, text: str) -> list[str]:
         return names
 
     if filename == "requirements.txt":
-        names = []
+        req_names: list[str] = []
         for line in text.splitlines():
             line = line.split("#", 1)[0].strip()
             match = re.match(r"[A-Za-z0-9_.-]+", line)
             if match:
-                names.append(match.group(0))
-        return names
+                req_names.append(match.group(0))
+        return req_names
 
     # pyproject.toml: take the leading package name of every quoted requirement string.
     return re.findall(r"""["']([A-Za-z0-9_.-]+)\s*(?:[<>=!~\[;,]|["'])""", text)
@@ -425,16 +428,20 @@ async def _fetch_repo_details(full_name: str, refresh: bool = False) -> dict:
         if cached is not None:
             return cached
 
-    details = {"languages": {}, "dependencies": []}
+    details: dict[str, Any] = {"languages": {}, "dependencies": []}
 
-    response = await github_get(f"{GITHUB_API_URL}/repos/{full_name}/languages")
-    if response.status_code == 200 and isinstance(response.json(), dict):
-        details["languages"] = response.json()
+    try:
+        response = await github_get(f"{GITHUB_API_URL}/repos/{full_name}/languages")
+        if response.status_code == 200 and isinstance(response.json(), dict):
+            details["languages"] = response.json()
+    except (GitHubUpstreamError, GitHubTimeoutError, httpx.HTTPError, ValueError):
+        pass
 
+    dependencies_list: list[str] = details["dependencies"]
     for filename in MANIFEST_FILES:
         try:
-            details["dependencies"].extend(await _fetch_manifest(full_name, filename))
-        except (httpx.HTTPError, ValueError):
+            dependencies_list.extend(await _fetch_manifest(full_name, filename))
+        except (GitHubUpstreamError, GitHubTimeoutError, httpx.HTTPError, ValueError):
             # One file that will not load should not lose the rest.
             continue
 
@@ -558,7 +565,7 @@ async def fetch_merged_external_pull_requests(
     client = get_client()
     query = f"is:pr is:merged author:{clean_user} -user:{clean_user}"
     url = f"{GITHUB_API_URL}/search/issues"
-    params = {
+    params: dict[str, Any] = {
         "q": query,
         "per_page": min(limit, 100),
         "sort": "updated",
@@ -615,9 +622,12 @@ async def fetch_merged_external_pull_requests(
             }
         )
 
+    repo_items: list[dict[str, Any]] = [
+        {"repository": r, "count": c} for r, c in repo_counts.items()
+    ]
     sorted_repos = sorted(
-        [{"repository": r, "count": c} for r, c in repo_counts.items()],
-        key=lambda x: x["count"],
+        repo_items,
+        key=lambda x: int(str(x["count"])),
         reverse=True,
     )
 
