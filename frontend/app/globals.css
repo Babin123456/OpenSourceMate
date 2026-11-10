@@ -46,6 +46,13 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Ensure anchor navigation has comfortable offset below the sticky navigation bar */
+[id],
+section[id],
+article[id] {
+  scroll-margin-top: 5.5rem;
+}
+
 html,
 body {
   min-height: 100%;
