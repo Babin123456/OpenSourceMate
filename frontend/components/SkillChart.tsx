@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useId } from "react";
+import { COLOR_BLIND_SAFE_PALETTE, getColorForIndex, type ColorBlindSafeColor } from "../utils/colorPalette";
 
 export type SkillItem = {
   name: string;
@@ -17,17 +18,8 @@ export interface SkillChartProps {
   className?: string;
 }
 
-// Harmonious, high-contrast, accessible color palette
-const CHART_PALETTE = [
-  { fill: "#8b5cf6", stroke: "#7c3aed", name: "Purple", text: "#c4b5fd" }, // Purple
-  { fill: "#3b82f6", stroke: "#2563eb", name: "Blue", text: "#93c5fd" }, // Blue
-  { fill: "#10b981", stroke: "#059669", name: "Emerald", text: "#6ee7b7" }, // Emerald
-  { fill: "#f59e0b", stroke: "#d97706", name: "Amber", text: "#fcd34d" }, // Amber
-  { fill: "#ec4899", stroke: "#db2777", name: "Pink", text: "#f472b6" }, // Pink
-  { fill: "#06b6d4", stroke: "#0891b2", name: "Cyan", text: "#67e8f9" }, // Cyan
-  { fill: "#6366f1", stroke: "#4f46e5", name: "Indigo", text: "#a5b4fc" }, // Indigo
-  { fill: "#14b8a6", stroke: "#0d9488", name: "Teal", text: "#5eead4" }, // Teal
-];
+// Harmonious, color-blind safe, high-contrast Okabe-Ito accessible palette
+const CHART_PALETTE = COLOR_BLIND_SAFE_PALETTE;
 
 export default function SkillChart({
   skills,
