@@ -127,3 +127,123 @@ button {
     outline-offset: 2px;
   }
 }
+
+/* ==========================================================================
+   Print Stylesheet for Analysis Results & Reports (WCAG 2.1 AA Printable Spec)
+   ========================================================================== */
+@media print {
+  @page {
+    margin: 1.5cm;
+    size: A4 portrait;
+  }
+
+  /* Reset backgrounds, shadows, and force pure high-contrast black on white */
+  *,
+  *::before,
+  *::after {
+    background: transparent !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+    line-height: 1.4 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Hide interactive non-printable chrome: navigation, footer, buttons, search */
+  nav,
+  footer,
+  button,
+  .no-print,
+  [role="dialog"],
+  [aria-modal="true"],
+  .theme-toggle-container,
+  input,
+  select,
+  textarea {
+    display: none !important;
+  }
+
+  /* Ensure main content expands gracefully without overflow clipping */
+  main,
+  #main-content,
+  .print-container {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Prevent page breaks inside cards, tables, charts and checklists */
+  article,
+  section,
+  table,
+  tr,
+  figure,
+  .break-inside-avoid,
+  .card,
+  [data-testid="profile-card"],
+  [data-testid="skill-chart"],
+  [data-testid="activity-summary-card"] {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 6px !important;
+    margin-bottom: 1.25rem !important;
+    padding: 1rem !important;
+  }
+
+  /* Headings typography and break hygiene */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    color: #111827 !important;
+    font-weight: 700 !important;
+  }
+
+  h1 {
+    font-size: 20pt !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  h2 {
+    font-size: 15pt !important;
+    margin-top: 1rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  h3 {
+    font-size: 12pt !important;
+  }
+
+  /* Render hyperlinks explicitly for printed hard-copy context */
+  a[href^="http"]:after {
+    content: " (" attr(href) ")";
+    font-size: 8pt;
+    color: #4b5563 !important;
+    word-break: break-all;
+  }
+
+  /* Do not append URL for internal anchors, fragments or javascript void */
+  a[href^="#"]:after,
+  a[href^="javascript:"]:after {
+    content: "";
+  }
+
+  /* High fidelity print badge rendering */
+  .badge,
+  span[class*="rounded-full"] {
+    border: 1px solid #9ca3af !important;
+    padding: 2px 6px !important;
+    font-weight: 600 !important;
+  }
+}
