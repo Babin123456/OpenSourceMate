@@ -1,53 +1,107 @@
 import type { GitHubUserProfile } from "../../types/api";
+import userStandardJson from "../../../fixtures/users/user_standard.json";
+import userNoBioJson from "../../../fixtures/users/user_no_bio.json";
+import userNoReposJson from "../../../fixtures/users/user_no_repos.json";
+import userManyReposJson from "../../../fixtures/users/user_many_repos.json";
+import reposForksOnlyJson from "../../../fixtures/repositories/repos_forks_only.json";
+
+export interface RawGitHubUserFixture {
+  login: string;
+  id: number;
+  avatar_url: string;
+  html_url: string;
+  name: string | null;
+  company: string | null;
+  blog: string | null;
+  location: string | null;
+  email: string | null;
+  bio: string | null;
+  twitter_username: string | null;
+  public_repos: number;
+  public_gists: number;
+  followers: number;
+  following: number;
+  created_at: string;
+  updated_at?: string;
+}
+
+/**
+ * Adapts a raw sanitized GitHub REST API user fixture into the frontend profile contract.
+ */
+export function adaptRawUserFixture(raw: RawGitHubUserFixture): GitHubUserProfile {
+  return {
+    username: raw.login,
+    name: raw.name,
+    bio: raw.bio,
+    avatar_url: raw.avatar_url,
+    public_repositories: raw.public_repos,
+    followers: raw.followers,
+    following: raw.following,
+    profile_url: raw.html_url,
+    company: raw.company,
+    location: raw.location,
+    blog: raw.blog,
+    twitter_username: raw.twitter_username,
+    public_gists: raw.public_gists,
+    created_at: raw.created_at,
+  };
+}
+
+export const SHARED_USER_FIXTURES = {
+  standard: adaptRawUserFixture(userStandardJson),
+  noBio: adaptRawUserFixture(userNoBioJson),
+  noRepos: adaptRawUserFixture(userNoReposJson),
+  manyRepos: adaptRawUserFixture(userManyReposJson),
+};
+
+const forksOnlyOwner = reposForksOnlyJson[0]?.owner;
+const forksOnlyLogin = forksOnlyOwner?.login ?? "forks-only-dev";
+const forksOnlyId = forksOnlyOwner?.id ?? 90000002;
+const forksOnlyUrl = forksOnlyOwner?.html_url ?? `https://github.com/${forksOnlyLogin}`;
+
+const LEGACY_OCTOCAT_USER: GitHubUserProfile = {
+  username: "octocat",
+  name: "The Octocat",
+  bio: "Building the future of open source collaboration.",
+  avatar_url: "https://avatars.githubusercontent.com/u/583231?v=4",
+  public_repositories: 8,
+  followers: 12500,
+  following: 9,
+  profile_url: "https://github.com/octocat",
+  company: "@github",
+  location: "San Francisco, CA",
+  blog: "https://github.blog",
+  twitter_username: "github",
+  public_gists: 4,
+  created_at: "2011-01-25T18:44:36Z",
+};
 
 export const MOCK_USERS: Record<string, GitHubUserProfile> = {
-  octocat: {
-    username: "octocat",
-    name: "The Octocat",
-    bio: "Building the future of open source collaboration.",
-    avatar_url: "https://avatars.githubusercontent.com/u/583231?v=4",
-    public_repositories: 8,
-    followers: 12500,
-    following: 9,
-    profile_url: "https://github.com/octocat",
-    company: "@github",
-    location: "San Francisco, CA",
-    blog: "https://github.blog",
-    twitter_username: "github",
-    public_gists: 4,
-    created_at: "2011-01-25T18:44:36Z",
+  // Legacy preset preserved for existing mockApi.test.ts expectations
+  octocat: LEGACY_OCTOCAT_USER,
+  "octocat-real": {
+    ...LEGACY_OCTOCAT_USER,
+    username: "octocat-real",
   },
-  torvalds: {
-    username: "torvalds",
-    name: "Linus Torvalds",
-    bio: "Creator of Linux and Git.",
-    avatar_url: "https://avatars.githubusercontent.com/u/1024025?v=4",
-    public_repositories: 7,
-    followers: 215000,
-    following: 0,
-    profile_url: "https://github.com/torvalds",
-    company: "Linux Foundation",
-    location: "Portland, OR",
+  tiangolo: SHARED_USER_FIXTURES.standard,
+  torvalds: SHARED_USER_FIXTURES.noBio,
+  gaearon: SHARED_USER_FIXTURES.manyRepos,
+  "newbie-contributor": SHARED_USER_FIXTURES.noRepos,
+  [forksOnlyLogin]: {
+    username: forksOnlyLogin,
+    name: "Fork Contributor",
+    bio: null,
+    avatar_url: `https://avatars.githubusercontent.com/u/${forksOnlyId}?v=4`,
+    public_repositories: reposForksOnlyJson.length,
+    followers: 3,
+    following: 5,
+    profile_url: forksOnlyUrl,
+    company: null,
+    location: null,
     blog: null,
     twitter_username: null,
     public_gists: 0,
-    created_at: "2011-09-03T15:26:22Z",
-  },
-  gaearon: {
-    username: "gaearon",
-    name: "Dan Abramov",
-    bio: "Co-author of Redux and Create React App.",
-    avatar_url: "https://avatars.githubusercontent.com/u/810438?v=4",
-    public_repositories: 260,
-    followers: 86000,
-    following: 172,
-    profile_url: "https://github.com/gaearon",
-    company: "@bluesky",
-    location: "London, UK",
-    blog: "https://overreacted.io",
-    twitter_username: "dan_abramov",
-    public_gists: 78,
-    created_at: "2011-05-25T18:18:31Z",
+    created_at: reposForksOnlyJson[0]?.created_at ?? "2024-06-01T12:00:00Z",
   },
   alice: {
     username: "alice",
@@ -72,17 +126,16 @@ export const MOCK_USERS: Record<string, GitHubUserProfile> = {
  */
 export function generateMockUserProfile(username: string): GitHubUserProfile {
   const normalized = username.toLowerCase().trim();
-  if (MOCK_USERS[normalized]) {
-    return MOCK_USERS[normalized];
+  const matched = MOCK_USERS[normalized];
+  if (matched) {
+    return matched;
   }
 
   return {
     username,
     name: username.charAt(0).toUpperCase() + username.slice(1),
     bio: `Open-source developer working on ${username}'s favorite technologies.`,
-    avatar_url: `https://avatars.githubusercontent.com/u/${Math.abs(
-      hashCode(username)
-    )}?v=4`,
+    avatar_url: `https://avatars.githubusercontent.com/u/${Math.abs(hashCode(username))}?v=4`,
     public_repositories: 15,
     followers: 42,
     following: 18,
@@ -105,4 +158,3 @@ function hashCode(str: string): number {
   }
   return hash;
 }
-

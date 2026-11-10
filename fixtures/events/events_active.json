@@ -1,0 +1,577 @@
+[
+  {
+    "id": "26727148204",
+    "type": "PushEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 130084383,
+      "name": "sindresorhus/slugify",
+      "url": "https://api.github.com/repos/sindresorhus/slugify"
+    },
+    "payload": {
+      "ref": "refs/heads/main"
+    },
+    "public": true,
+    "created_at": "2026-11-08T18:07:54Z"
+  },
+  {
+    "id": "26726402071",
+    "type": "PushEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 4501025,
+      "name": "sindresorhus/editorconfig-sublime",
+      "url": "https://api.github.com/repos/sindresorhus/editorconfig-sublime"
+    },
+    "payload": {
+      "ref": "refs/heads/main"
+    },
+    "public": true,
+    "created_at": "2026-11-08T17:55:53Z"
+  },
+  {
+    "id": "26721999906",
+    "type": "PushEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 175398594,
+      "name": "sindresorhus/type-fest",
+      "url": "https://api.github.com/repos/sindresorhus/type-fest"
+    },
+    "payload": {
+      "ref": "refs/heads/main"
+    },
+    "public": true,
+    "created_at": "2026-11-09T12:52:16Z"
+  },
+  {
+    "id": "26719261275",
+    "type": "DeleteEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 55832243,
+      "name": "sindresorhus/eslint-plugin-unicorn",
+      "url": "https://api.github.com/repos/sindresorhus/eslint-plugin-unicorn"
+    },
+    "payload": {
+      "ref": "ss/inline-truthiness-ternary",
+      "ref_type": "branch"
+    },
+    "public": true,
+    "created_at": "2026-11-09T19:48:05Z"
+  },
+  {
+    "id": "26708433638",
+    "type": "CreateEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 55832243,
+      "name": "sindresorhus/eslint-plugin-unicorn",
+      "url": "https://api.github.com/repos/sindresorhus/eslint-plugin-unicorn"
+    },
+    "payload": {
+      "ref": "ss/inline-truthiness-ternary",
+      "ref_type": "branch"
+    },
+    "public": true,
+    "created_at": "2026-11-09T19:20:00Z"
+  },
+  {
+    "id": "26708402247",
+    "type": "PushEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 175398594,
+      "name": "sindresorhus/type-fest",
+      "url": "https://api.github.com/repos/sindresorhus/type-fest"
+    },
+    "payload": {
+      "ref": "refs/heads/main"
+    },
+    "public": true,
+    "created_at": "2026-11-09T14:31:35Z"
+  },
+  {
+    "id": "26705822940",
+    "type": "PushEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 19105307,
+      "name": "sindresorhus/file-type",
+      "url": "https://api.github.com/repos/sindresorhus/file-type"
+    },
+    "payload": {
+      "ref": "refs/heads/main"
+    },
+    "public": true,
+    "created_at": "2026-11-08T11:28:42Z"
+  },
+  {
+    "id": "26704756149",
+    "type": "DeleteEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 19105307,
+      "name": "sindresorhus/file-type",
+      "url": "https://api.github.com/repos/sindresorhus/file-type"
+    },
+    "payload": {
+      "ref": "improve-aiff-form-type-detection",
+      "ref_type": "branch"
+    },
+    "public": true,
+    "created_at": "2026-11-08T11:11:56Z"
+  },
+  {
+    "id": "26701488175",
+    "type": "PushEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 175398594,
+      "name": "sindresorhus/type-fest",
+      "url": "https://api.github.com/repos/sindresorhus/type-fest"
+    },
+    "payload": {
+      "ref": "refs/heads/main"
+    },
+    "public": true,
+    "created_at": "2026-11-09T17:26:23Z"
+  },
+  {
+    "id": "19606302941",
+    "type": "IssueCommentEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 55832243,
+      "name": "sindresorhus/eslint-plugin-unicorn",
+      "url": "https://api.github.com/repos/sindresorhus/eslint-plugin-unicorn"
+    },
+    "payload": {
+      "action": "created"
+    },
+    "public": true,
+    "created_at": "2026-11-09T18:38:46Z"
+  },
+  {
+    "id": "19591979419",
+    "type": "PullRequestEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 55832243,
+      "name": "sindresorhus/eslint-plugin-unicorn",
+      "url": "https://api.github.com/repos/sindresorhus/eslint-plugin-unicorn"
+    },
+    "payload": {
+      "action": "merged"
+    },
+    "public": true,
+    "created_at": "2026-11-09T20:22:28Z"
+  },
+  {
+    "id": "19591977601",
+    "type": "IssuesEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 55832243,
+      "name": "sindresorhus/eslint-plugin-unicorn",
+      "url": "https://api.github.com/repos/sindresorhus/eslint-plugin-unicorn"
+    },
+    "payload": {
+      "action": "closed"
+    },
+    "public": true,
+    "created_at": "2026-11-09T20:22:29Z"
+  },
+  {
+    "id": "19588417553",
+    "type": "PullRequestEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 55832243,
+      "name": "sindresorhus/eslint-plugin-unicorn",
+      "url": "https://api.github.com/repos/sindresorhus/eslint-plugin-unicorn"
+    },
+    "payload": {
+      "action": "merged"
+    },
+    "public": true,
+    "created_at": "2026-11-09T19:47:59Z"
+  },
+  {
+    "id": "19588415779",
+    "type": "IssuesEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 55832243,
+      "name": "sindresorhus/eslint-plugin-unicorn",
+      "url": "https://api.github.com/repos/sindresorhus/eslint-plugin-unicorn"
+    },
+    "payload": {
+      "action": "closed"
+    },
+    "public": true,
+    "created_at": "2026-11-09T19:48:03Z"
+  },
+  {
+    "id": "19588382103",
+    "type": "PullRequestEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 55832243,
+      "name": "sindresorhus/eslint-plugin-unicorn",
+      "url": "https://api.github.com/repos/sindresorhus/eslint-plugin-unicorn"
+    },
+    "payload": {
+      "action": "opened"
+    },
+    "public": true,
+    "created_at": "2026-11-09T19:47:44Z"
+  },
+  {
+    "id": "19585572640",
+    "type": "PullRequestEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 55832243,
+      "name": "sindresorhus/eslint-plugin-unicorn",
+      "url": "https://api.github.com/repos/sindresorhus/eslint-plugin-unicorn"
+    },
+    "payload": {
+      "action": "opened"
+    },
+    "public": true,
+    "created_at": "2026-11-09T19:20:03Z"
+  },
+  {
+    "id": "26646694600",
+    "type": "PushEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 20451415,
+      "name": "chalk/ansi-regex",
+      "url": "https://api.github.com/repos/chalk/ansi-regex"
+    },
+    "payload": {
+      "ref": "refs/heads/main"
+    },
+    "public": true,
+    "created_at": "2026-11-08T11:26:00Z"
+  },
+  {
+    "id": "26645563659",
+    "type": "PushEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 175398594,
+      "name": "sindresorhus/type-fest",
+      "url": "https://api.github.com/repos/sindresorhus/type-fest"
+    },
+    "payload": {
+      "ref": "refs/heads/main"
+    },
+    "public": true,
+    "created_at": "2026-11-09T09:31:43Z"
+  },
+  {
+    "id": "26629779306",
+    "type": "PushEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 130084383,
+      "name": "sindresorhus/slugify",
+      "url": "https://api.github.com/repos/sindresorhus/slugify"
+    },
+    "payload": {
+      "ref": "refs/heads/main"
+    },
+    "public": true,
+    "created_at": "2026-11-08T18:04:47Z"
+  },
+  {
+    "id": "26624410733",
+    "type": "PushEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 55832243,
+      "name": "sindresorhus/eslint-plugin-unicorn",
+      "url": "https://api.github.com/repos/sindresorhus/eslint-plugin-unicorn"
+    },
+    "payload": {
+      "ref": "refs/heads/main"
+    },
+    "public": true,
+    "created_at": "2026-11-08T18:33:53Z"
+  },
+  {
+    "id": "26622389727",
+    "type": "PushEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 1450623810,
+      "name": "soml-lang/soml-applescript",
+      "url": "https://api.github.com/repos/soml-lang/soml-applescript"
+    },
+    "payload": {
+      "ref": "refs/heads/main"
+    },
+    "public": true,
+    "created_at": "2026-11-08T20:25:24Z"
+  },
+  {
+    "id": "26620400463",
+    "type": "PushEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 175398594,
+      "name": "sindresorhus/type-fest",
+      "url": "https://api.github.com/repos/sindresorhus/type-fest"
+    },
+    "payload": {
+      "ref": "refs/heads/main"
+    },
+    "public": true,
+    "created_at": "2026-11-08T17:45:29Z"
+  },
+  {
+    "id": "26618013646",
+    "type": "PushEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 175398594,
+      "name": "sindresorhus/type-fest",
+      "url": "https://api.github.com/repos/sindresorhus/type-fest"
+    },
+    "payload": {
+      "ref": "refs/heads/main"
+    },
+    "public": true,
+    "created_at": "2026-11-09T03:29:10Z"
+  },
+  {
+    "id": "26613106837",
+    "type": "PushEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 1450623810,
+      "name": "soml-lang/soml-applescript",
+      "url": "https://api.github.com/repos/soml-lang/soml-applescript"
+    },
+    "payload": {
+      "ref": "refs/heads/main"
+    },
+    "public": true,
+    "created_at": "2026-11-08T20:15:10Z"
+  },
+  {
+    "id": "26612888723",
+    "type": "CreateEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 1450623810,
+      "name": "soml-lang/soml-applescript",
+      "url": "https://api.github.com/repos/soml-lang/soml-applescript"
+    },
+    "payload": {
+      "ref": "main",
+      "ref_type": "branch"
+    },
+    "public": true,
+    "created_at": "2026-11-08T20:12:17Z"
+  },
+  {
+    "id": "26609259478",
+    "type": "PushEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 55832243,
+      "name": "sindresorhus/eslint-plugin-unicorn",
+      "url": "https://api.github.com/repos/sindresorhus/eslint-plugin-unicorn"
+    },
+    "payload": {
+      "ref": "refs/heads/main"
+    },
+    "public": true,
+    "created_at": "2026-11-08T19:24:31Z"
+  },
+  {
+    "id": "26603594569",
+    "type": "PushEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 55832243,
+      "name": "sindresorhus/eslint-plugin-unicorn",
+      "url": "https://api.github.com/repos/sindresorhus/eslint-plugin-unicorn"
+    },
+    "payload": {
+      "ref": "refs/heads/ss/investigate-issue-3984"
+    },
+    "public": true,
+    "created_at": "2026-11-08T18:08:02Z"
+  },
+  {
+    "id": "26603252017",
+    "type": "PushEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 43191689,
+      "name": "chalk/slice-ansi",
+      "url": "https://api.github.com/repos/chalk/slice-ansi"
+    },
+    "payload": {
+      "ref": "refs/heads/main"
+    },
+    "public": true,
+    "created_at": "2026-11-08T18:03:19Z"
+  },
+  {
+    "id": "26596910789",
+    "type": "DeleteEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 55832243,
+      "name": "sindresorhus/eslint-plugin-unicorn",
+      "url": "https://api.github.com/repos/sindresorhus/eslint-plugin-unicorn"
+    },
+    "payload": {
+      "ref": "ss/investigate-issue-3984",
+      "ref_type": "branch"
+    },
+    "public": true,
+    "created_at": "2026-11-08T18:33:54Z"
+  },
+  {
+    "id": "26590577380",
+    "type": "PushEvent",
+    "actor": {
+      "id": 170270,
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?"
+    },
+    "repo": {
+      "id": 19105307,
+      "name": "sindresorhus/file-type",
+      "url": "https://api.github.com/repos/sindresorhus/file-type"
+    },
+    "payload": {
+      "ref": "refs/heads/main"
+    },
+    "public": true,
+    "created_at": "2026-11-08T11:11:55Z"
+  }
+]

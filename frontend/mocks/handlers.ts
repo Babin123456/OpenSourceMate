@@ -43,18 +43,47 @@ export function handleMockApiRequest(url: string, method?: string): MockResponse
 
   // 2. User Repositories: /api/github/users/:username/repositories
   const repoMatch = pathname.match(/^\/api\/github\/users\/([^/]+)\/repositories\/?$/);
-  if (repoMatch) {
+  if (repoMatch && repoMatch[1]) {
     const rawUsername = decodeURIComponent(repoMatch[1]);
     const mockCheck = checkSpecialMockConditions(rawUsername);
     if (mockCheck) return mockCheck;
 
-    const repositories = generateMockRepositories(rawUsername);
+    const allRepositories = generateMockRepositories(rawUsername);
+    const pageParam = urlObj.searchParams.get("page");
+    const perPageParam = urlObj.searchParams.get("per_page");
+    const isPaginated = Boolean(pageParam || perPageParam);
+    let repositories = allRepositories;
+    let start = 0;
+
+    if (isPaginated) {
+      const page = Math.max(1, Number.parseInt(pageParam || "1", 10) || 1);
+      const perPage = Math.max(1, Number.parseInt(perPageParam || "30", 10) || 30);
+      start = (page - 1) * perPage;
+      repositories = allRepositories.slice(start, start + perPage);
+    }
+
+    const backendPerPage = 100;
+    const backendCap = 300;
+    const totalPagesFetched =
+      repositories.length === 0
+        ? 0
+        : isPaginated
+          ? 1
+          : Math.max(1, Math.ceil(repositories.length / backendPerPage));
+    const hasMore = isPaginated
+      ? start + repositories.length < allRepositories.length || allRepositories.length >= backendCap
+      : repositories.length >= backendCap;
+
     return {
       status: 200,
       headers: { "Content-Type": "application/json" },
       body: {
         username: rawUsername,
         count: repositories.length,
+        repository_count: repositories.length,
+        total_pages_fetched: totalPagesFetched,
+        has_more: hasMore,
+        fetched_at: new Date().toISOString(),
         repositories,
       },
     };
@@ -62,12 +91,13 @@ export function handleMockApiRequest(url: string, method?: string): MockResponse
 
   // 3. User Skills: /api/github/users/:username/skills
   const skillsMatch = pathname.match(/^\/api\/github\/users\/([^/]+)\/skills\/?$/);
-  if (skillsMatch) {
+  if (skillsMatch && skillsMatch[1]) {
     const rawUsername = decodeURIComponent(skillsMatch[1]);
     const mockCheck = checkSpecialMockConditions(rawUsername);
     if (mockCheck) return mockCheck;
 
-    const skills = generateMockSkills(rawUsername);
+    const includeForks = urlObj.searchParams.get("include_forks") === "true";
+    const skills = generateMockSkills(rawUsername, includeForks);
     return {
       status: 200,
       headers: { "Content-Type": "application/json" },
@@ -77,7 +107,7 @@ export function handleMockApiRequest(url: string, method?: string): MockResponse
 
   // 4. User Profile: /api/github/users/:username
   const userMatch = pathname.match(/^\/api\/github\/users\/([^/]+)\/?$/);
-  if (userMatch) {
+  if (userMatch && userMatch[1]) {
     const rawUsername = decodeURIComponent(userMatch[1]);
     const mockCheck = checkSpecialMockConditions(rawUsername);
     if (mockCheck) return mockCheck;
@@ -92,7 +122,7 @@ export function handleMockApiRequest(url: string, method?: string): MockResponse
 
   // 5. Matched Issues: /api/matching/users/:username/issues
   const matchingMatch = pathname.match(/^\/api\/matching\/users\/([^/]+)\/issues\/?$/);
-  if (matchingMatch) {
+  if (matchingMatch && matchingMatch[1]) {
     const rawUsername = decodeURIComponent(matchingMatch[1]);
     const mockCheck = checkSpecialMockConditions(rawUsername);
     if (mockCheck) return mockCheck;

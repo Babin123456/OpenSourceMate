@@ -1,0 +1,21 @@
+{
+  "login": "newbie-contributor",
+  "id": 90000001,
+  "avatar_url": "https://avatars.githubusercontent.com/u/90000001?v=4",
+  "html_url": "https://github.com/newbie-contributor",
+  "type": "User",
+  "name": "Sam Newbie",
+  "company": null,
+  "blog": null,
+  "location": null,
+  "email": null,
+  "hireable": null,
+  "bio": "First-time open source contributor.",
+  "twitter_username": null,
+  "public_repos": 0,
+  "public_gists": 0,
+  "followers": 1,
+  "following": 5,
+  "created_at": "2026-10-01T12:00:00Z",
+  "updated_at": "2026-10-02T08:00:00Z"
+}
