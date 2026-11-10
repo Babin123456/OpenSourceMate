@@ -154,6 +154,19 @@ class RepositoryListSerializer(BaseModel):
     )
 
 
+class TopRepositoriesResponseSerializer(BaseModel):
+    """Top repositories by stars and recent activity (Issue #85)."""
+
+    username: str = Field(..., description="GitHub username")
+    exclude_forks: bool = Field(default=True, description="Whether forks were excluded")
+    top_by_stars: list[RepositoryItemSerializer] = Field(
+        default_factory=list, description="Top 5 repositories sorted by stars descending"
+    )
+    most_recent: list[RepositoryItemSerializer] = Field(
+        default_factory=list, description="Top 5 repositories sorted by pushed_at/updated_at descending"
+    )
+
+
 # ---------------------------------------------------------
 # Skill Analysis Serializers
 # ---------------------------------------------------------
