@@ -21,8 +21,20 @@ def is_valid_github_username(username: str | None) -> bool:
     return bool(GITHUB_USERNAME_REGEX.fullmatch(clean))
 
 
+def normalize_github_username(username: str | None) -> str:
+    """Normalize a GitHub username to its canonical lowercase form, stripping leading @ and whitespace."""
+    if not username:
+        return ""
+    clean = username.strip().lstrip("@")
+    return clean.lower()
+
+
 def validate_github_username(username: str | None) -> str:
-    """Validate and return normalized GitHub username, raising InvalidUsernameError if invalid."""
-    if not username or not is_valid_github_username(username):
-        raise InvalidUsernameError(username=username or "")
-    return username.strip()
+    """Validate and return normalized canonical lowercase GitHub username, raising InvalidUsernameError if invalid."""
+    if not username:
+        raise InvalidUsernameError(username="")
+    
+    clean = username.strip().lstrip("@")
+    if not is_valid_github_username(clean):
+        raise InvalidUsernameError(username=username)
+    return clean.lower()
