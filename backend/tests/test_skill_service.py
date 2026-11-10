@@ -1,6 +1,7 @@
 import unittest
 
 from app.services.skill_service import analyze_skills
+from tests.fixture_loader import load_fixture
 
 
 class TestSkillService(unittest.TestCase):
@@ -114,3 +115,54 @@ class TestSkillDetection(unittest.TestCase):
 
         self.assertEqual(skills[0]["weight"], 1.0)
         self.assertEqual(skills[1]["weight"], 0.5)
+
+    def test_analyze_skills_with_empty_repository_fixture(self):
+        repositories = load_fixture("repositories/repos_empty.json")
+        result = analyze_skills(repositories)
+
+        self.assertEqual(result["skills"], [])
+        self.assertEqual(result["total_repositories_analyzed"], 0)
+
+    def test_analyze_skills_with_forks_only_fixture(self):
+        forks_only = load_fixture("repositories/repos_forks_only.json")
+        excluded = analyze_skills(forks_only, include_forks=False)
+        included = analyze_skills(forks_only, include_forks=True)
+
+        self.assertEqual(excluded["total_repositories_analyzed"], 0)
+        self.assertEqual(excluded["skills"], [])
+        self.assertEqual(included["total_repositories_analyzed"], len(forks_only))
+        self.assertEqual(
+            {s["name"] for s in included["skills"] if s["type"] == "language"},
+            {"Python", "TypeScript"},
+        )
+
+    def test_analyze_skills_with_language_fixtures_and_noise_filtering(self):
+        repos = load_fixture("repositories/repos_standard.json")
+        multi_langs = load_fixture("languages/languages_multi.json")
+        single_langs = load_fixture("languages/languages_single.json")
+        empty_langs = load_fixture("languages/languages_empty.json")
+
+        details = {
+            repos[0]["full_name"]: {"languages": empty_langs, "dependencies": []},
+            repos[1]["full_name"]: {"languages": single_langs, "dependencies": []},
+            repos[3]["full_name"]: {"languages": multi_langs, "dependencies": []},
+        }
+
+        filtered = analyze_skills(repos, repo_details=details, ignore_noise=True)
+        unfiltered = analyze_skills(repos, repo_details=details, ignore_noise=False)
+
+        filtered_names = {s["name"] for s in filtered["skills"]}
+        unfiltered_names = {s["name"] for s in unfiltered["skills"]}
+        self.assertNotIn("Makefile", filtered_names)
+        self.assertIn("Makefile", unfiltered_names)
+        self.assertIn("Python", filtered_names)
+        self.assertIn("TypeScript", filtered_names)
+
+    def test_analyze_skills_with_large_repository_fixture(self):
+        repos_large = load_fixture("repositories/repos_large.json")
+        expected_non_forks = sum(1 for r in repos_large if not r.get("fork"))
+
+        result = analyze_skills(repos_large)
+
+        self.assertEqual(result["total_repositories_analyzed"], expected_non_forks)
+        self.assertGreater(len(result["skills"]), 0)

@@ -9,6 +9,7 @@ Verifies:
 """
 
 from datetime import datetime, timezone
+
 import httpx
 import pytest
 
@@ -21,6 +22,7 @@ from app.services.github_service import (
     get_user_repositories,
     parse_github_link_header,
 )
+from tests.fixture_loader import load_fixture
 
 RESET_TS = 1893456000  # 2030-01-01T00:00:00Z
 
@@ -265,3 +267,44 @@ async def test_skills_route_counts_multi_page_repositories(api, github_mock):
     assert data["skills"][0]["name"] == "Python"
     assert data["skills"][0]["repository_count"] == 150
 
+
+async def test_multi_page_with_real_sanitized_fixtures(github_mock):
+    """Paginated page1 + page2 fixtures terminate cleanly and combine all items."""
+    page1 = load_fixture("repositories/repos_paginated_page1.json")
+    page2 = load_fixture("repositories/repos_paginated_page2.json")
+    calls = []
+
+    def mock_router(request: httpx.Request):
+        calls.append(request.url.params.get("page", "1"))
+        if "page=2" in str(request.url):
+            return httpx.Response(200, json=page2)
+        link = '<https://api.github.com/users/torvalds/repos?per_page=10&page=2>; rel="next"'
+        return httpx.Response(200, json=page1, headers={"Link": link})
+
+    github_mock(mock_router)
+
+    repos = await get_user_repositories("torvalds", per_page=10, max_pages=3)
+
+    assert repos is not None
+    assert len(repos) == len(page1) + len(page2)
+    assert calls == ["1", "2"]
+
+
+async def test_large_collection_fixture_respects_cap(github_mock):
+    """Repeating 100-item large repository fixture respects max_cap (300)."""
+    large_page = load_fixture("repositories/repos_large.json")
+
+    def mock_router(request: httpx.Request):
+        page = request.url.params.get("page", "1")
+        link = f'<https://api.github.com/users/gaearon/repos?per_page=100&page={int(page) + 1}>; rel="next"'
+        return httpx.Response(200, json=large_page, headers={"Link": link})
+
+    calls = github_mock(mock_router)
+
+    repos = await get_user_repositories(
+        "gaearon", per_page=100, max_pages=3, max_cap=300
+    )
+
+    assert repos is not None
+    assert len(repos) == 300
+    assert len(calls) == 3

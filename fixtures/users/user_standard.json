@@ -1,0 +1,21 @@
+{
+  "login": "tiangolo",
+  "id": 1326112,
+  "avatar_url": "https://avatars.githubusercontent.com/u/1326112?v=4",
+  "html_url": "https://github.com/tiangolo",
+  "type": "User",
+  "name": "Sebastián Ramírez",
+  "company": "FastAPI Cloud",
+  "blog": "https://tiangolo.com",
+  "location": "Europe",
+  "email": null,
+  "hireable": true,
+  "bio": "Creator of FastAPI, Typer, SQLModel, Asyncer, etc. 🚀\r\nFrom 🇨🇴 in 🇩🇪. \r\nOpen Source, Python, APIs, AI. 🤖 Building FastAPI Cloud. ⚡️",
+  "twitter_username": "tiangolo",
+  "public_repos": 55,
+  "public_gists": 1,
+  "followers": 32536,
+  "following": 7,
+  "created_at": "2012-01-12T22:37:04Z",
+  "updated_at": "2026-11-05T07:32:07Z"
+}

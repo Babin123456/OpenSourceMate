@@ -7,6 +7,7 @@ All notable changes to OpenSourceMate are recorded here. The format follows
 
 ### Added
 
+- Testing: shared sanitized GitHub API response fixtures under `fixtures/` (users, repositories, languages, events, pagination, and edge cases) integrated across backend pytest tests and frontend mocks/tests (#232).
 - Documentation: architecture guide, deployment guide, roadmap, label guide, first contribution guide,
   `.env.example` files and a polished README.
 - Frontend: FAQ section, issue bookmarks and recommendation filters, recent searches, export of analysis

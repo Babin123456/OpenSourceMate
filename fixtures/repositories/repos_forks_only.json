@@ -1,0 +1,54 @@
+[
+  {
+    "id": 91000001,
+    "name": "django-fork",
+    "full_name": "forks-only-dev/django-fork",
+    "private": false,
+    "owner": {
+      "login": "forks-only-dev",
+      "id": 90000002,
+      "html_url": "https://github.com/forks-only-dev"
+    },
+    "html_url": "https://github.com/forks-only-dev/django-fork",
+    "description": "Synthetic forked Python web framework fixture.",
+    "fork": true,
+    "url": "https://api.github.com/repos/forks-only-dev/django-fork",
+    "created_at": "2024-06-01T12:00:00Z",
+    "updated_at": "2026-10-01T08:00:00Z",
+    "pushed_at": "2026-10-01T07:55:00Z",
+    "stargazers_count": 0,
+    "watchers_count": 0,
+    "language": "Python",
+    "forks_count": 0,
+    "open_issues_count": 0,
+    "topics": ["django", "python"],
+    "visibility": "public",
+    "default_branch": "main"
+  },
+  {
+    "id": 91000002,
+    "name": "react-fork",
+    "full_name": "forks-only-dev/react-fork",
+    "private": false,
+    "owner": {
+      "login": "forks-only-dev",
+      "id": 90000002,
+      "html_url": "https://github.com/forks-only-dev"
+    },
+    "html_url": "https://github.com/forks-only-dev/react-fork",
+    "description": "Synthetic forked TypeScript UI library fixture.",
+    "fork": true,
+    "url": "https://api.github.com/repos/forks-only-dev/react-fork",
+    "created_at": "2024-08-10T10:00:00Z",
+    "updated_at": "2026-09-15T14:20:00Z",
+    "pushed_at": "2026-09-15T14:10:00Z",
+    "stargazers_count": 1,
+    "watchers_count": 1,
+    "language": "TypeScript",
+    "forks_count": 0,
+    "open_issues_count": 0,
+    "topics": ["react", "typescript"],
+    "visibility": "public",
+    "default_branch": "main"
+  }
+]

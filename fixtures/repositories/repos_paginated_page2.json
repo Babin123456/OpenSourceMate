@@ -1,0 +1,54 @@
+[
+  {
+    "id": 79171906,
+    "name": "libdc-for-dirk",
+    "full_name": "torvalds/libdc-for-dirk",
+    "private": false,
+    "owner": {
+      "login": "torvalds",
+      "id": 1024025,
+      "html_url": "https://github.com/torvalds"
+    },
+    "html_url": "https://github.com/torvalds/libdc-for-dirk",
+    "description": "Only use for syncing with Dirk, don't use for anything else",
+    "fork": true,
+    "url": "https://api.github.com/repos/torvalds/libdc-for-dirk",
+    "created_at": "2017-01-17T00:25:49Z",
+    "updated_at": "2026-10-26T08:41:59Z",
+    "pushed_at": "2024-12-26T20:12:43Z",
+    "stargazers_count": 412,
+    "watchers_count": 412,
+    "language": "C",
+    "forks_count": 51,
+    "open_issues_count": 1,
+    "topics": [],
+    "visibility": "public",
+    "default_branch": "Subsurface-branch"
+  },
+  {
+    "id": 78665021,
+    "name": "subsurface-for-dirk",
+    "full_name": "torvalds/subsurface-for-dirk",
+    "private": false,
+    "owner": {
+      "login": "torvalds",
+      "id": 1024025,
+      "html_url": "https://github.com/torvalds"
+    },
+    "html_url": "https://github.com/torvalds/subsurface-for-dirk",
+    "description": "Do not use - the real upstream is  Subsurface-divelog/subsurface",
+    "fork": true,
+    "url": "https://api.github.com/repos/torvalds/subsurface-for-dirk",
+    "created_at": "2017-01-11T18:03:01Z",
+    "updated_at": "2026-10-26T08:41:58Z",
+    "pushed_at": "2026-10-18T17:57:13Z",
+    "stargazers_count": 480,
+    "watchers_count": 480,
+    "language": "C++",
+    "forks_count": 68,
+    "open_issues_count": 1,
+    "topics": [],
+    "visibility": "public",
+    "default_branch": "master"
+  }
+]

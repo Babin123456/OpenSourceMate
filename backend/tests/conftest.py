@@ -7,6 +7,15 @@ import pytest
 
 from app.config import Settings
 from app.services import github_service
+from tests.fixture_loader import FIXTURES_DIR, load_fixture
+
+__all__ = ["FIXTURES_DIR", "load_fixture"]
+
+
+@pytest.fixture(scope="session")
+def fixture_loader():
+    """Return the shared load_fixture helper for pytest test functions."""
+    return load_fixture
 
 
 @pytest.fixture
