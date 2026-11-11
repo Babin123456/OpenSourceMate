@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "jest",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
     "mock-server": "node scripts/mock-server.mjs"
   },
   "dependencies": {
