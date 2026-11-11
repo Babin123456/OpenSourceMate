@@ -22,12 +22,22 @@ export interface ValidationResult {
 }
 
 /**
- * Clean and normalize a raw username input by trimming outer whitespace
- * and stripping any leading '@' symbols.
+ * Clean and normalize a raw username input by trimming outer whitespace,
+ * stripping leading '@' symbols, and converting to canonical lowercase.
  */
 export function sanitizeUsername(rawInput: string): string {
   if (!rawInput) return "";
-  return rawInput.trim().replace(/^@+/, "");
+  return rawInput.trim().replace(/^@+/, "").toLowerCase();
+}
+
+/**
+ * Format a canonical username for display (prefers original casing from profile data when available).
+ */
+export function formatCanonicalUsername(input: string, profileLogin?: string): string {
+  if (profileLogin && profileLogin.toLowerCase() === input.toLowerCase()) {
+    return profileLogin;
+  }
+  return sanitizeUsername(input);
 }
 
 /**
