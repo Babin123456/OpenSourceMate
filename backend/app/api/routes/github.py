@@ -7,6 +7,7 @@ from app.schemas.serializers import (
     ExtendedGitHubUserProfileSerializer,
     GitHubUserProfileSerializer,
     RepositoryListSerializer,
+    TopRepositoriesResponseSerializer,
     UserSkillsSerializer,
 )
 from app.services.github_service import (
@@ -103,6 +104,69 @@ async def get_repositories(
             }
             for repo in repositories
         ],
+    }
+
+
+@router.get(
+    "/users/{username}/top-repositories",
+    response_model=TopRepositoriesResponseSerializer,
+    summary="Get top 5 starred and 5 most recent repositories (Issue #85)",
+)
+async def get_top_repositories(
+    username: str,
+    exclude_forks: bool = Query(default=True, description="Whether to exclude forked repositories"),
+    refresh: bool = Query(default=False, description="Bypass cache and fetch fresh repository data"),
+):
+    """Return top 5 starred repositories and 5 most recently pushed/updated repositories.
+    
+    Supports fork exclusion and provides language, stars, forks, and updated timestamp.
+    """
+    validated_username = validate_github_username(username)
+    repositories = await get_user_repositories(validated_username, refresh=refresh)
+
+    if repositories is None:
+        raise HTTPException(
+            status_code=404,
+            detail="GitHub user not found",
+        )
+
+    # Filter forks if requested
+    filtered = [
+        r for r in repositories
+        if not (exclude_forks and r.get("fork", False))
+    ]
+
+    def serialize_repo(r: dict) -> dict:
+        return {
+            "name": r["name"],
+            "description": r.get("description"),
+            "language": r.get("language"),
+            "stars": r.get("stargazers_count", 0),
+            "forks": r.get("forks_count", 0),
+            "is_fork": r.get("fork", False),
+            "url": r.get("html_url"),
+            "updated_at": r.get("pushed_at") or r.get("updated_at"),
+        }
+
+    # Top 5 by stars descending
+    by_stars = sorted(
+        filtered,
+        key=lambda r: (r.get("stargazers_count", 0), r.get("forks_count", 0)),
+        reverse=True,
+    )[:5]
+
+    # Top 5 by pushed_at / updated_at descending
+    by_recent = sorted(
+        filtered,
+        key=lambda r: str(r.get("pushed_at") or r.get("updated_at") or ""),
+        reverse=True,
+    )[:5]
+
+    return {
+        "username": validated_username,
+        "exclude_forks": exclude_forks,
+        "top_by_stars": [serialize_repo(r) for r in by_stars],
+        "most_recent": [serialize_repo(r) for r in by_recent],
     }
 
 
