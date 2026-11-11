@@ -1,0 +1,66 @@
+{
+  "common": {
+    "brandName": "OpenSourceMate",
+    "tagline": "AI-Powered Open-Source Matchmaking",
+    "theme": {
+      "toggleToLight": "Switch to light mode",
+      "toggleToDark": "Switch to dark mode"
+    },
+    "language": {
+      "select": "Language",
+      "en": "English",
+      "hi": "हिन्दी (Hindi)"
+    }
+  },
+  "nav": {
+    "analyzer": "Profile Analyzer",
+    "howItWorks": "How It Works",
+    "compare": "Compare",
+    "contribute": "Contribute",
+    "faq": "FAQ"
+  },
+  "hero": {
+    "badge": "AI-Powered Open-Source Matchmaking",
+    "titlePrefix": "Turn your GitHub history into",
+    "titleHighlight": "meaningful open-source contributions",
+    "subtitle": "OpenSourceMate analyzes your repositories, extracts technical skills, estimates proficiency, and matches you with beginner-friendly issues tailored to your exact developer profile.",
+    "ctaAnalyze": "Analyze Your Profile",
+    "ctaCompare": "Compare Developers"
+  },
+  "howItWorks": {
+    "badge": "Step-by-step",
+    "title": "How OpenSourceMate Works",
+    "subtitle": "A three-stage intelligent pipeline that bridges your existing coding experience with real open-source contribution opportunities.",
+    "step1": {
+      "number": "01",
+      "badge": "Ingestion",
+      "title": "Analyze GitHub Repositories",
+      "desc": "Fetches public repositories, detects languages, dependencies (package.json, requirements.txt, pyproject.toml), and repository topics."
+    },
+    "step2": {
+      "number": "02",
+      "badge": "Inference",
+      "title": "Extract & Weight Skills",
+      "desc": "Filters noise languages (Dockerfiles, Makefiles, Jupyter), consolidates ecosystems, and calculates recency-based proficiency."
+    },
+    "step3": {
+      "number": "03",
+      "badge": "Recommendation",
+      "title": "Discover Matched Issues",
+      "desc": "Scores open issues using TF-IDF term weighting and semantic similarity, surfacing good-first-issues that align with your stack."
+    }
+  },
+  "analyzer": {
+    "title": "GitHub Profile Analyzer",
+    "inputPlaceholder": "Enter GitHub username (e.g., octocat)",
+    "analyzeButton": "Analyze Profile",
+    "analyzing": "Analyzing Profile...",
+    "recentSearches": "Recent Searches",
+    "clearAll": "Clear All"
+  },
+  "footer": {
+    "license": "MIT License",
+    "privacy": "Privacy Policy",
+    "contributing": "Contributing Guide"
+  }
+}
