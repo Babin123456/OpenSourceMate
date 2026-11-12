@@ -6,10 +6,7 @@ export interface SkeletonProps {
   theme?: "dark" | "light";
 }
 
-export const Skeleton: React.FC<SkeletonProps> = ({
-  type = "card",
-  theme = "dark",
-}) => {
+export const Skeleton: React.FC<SkeletonProps> = ({ type = "card", theme = "dark" }) => {
   const isDark = theme === "dark";
   const bgClass = isDark ? "bg-slate-800" : "bg-slate-200";
 
