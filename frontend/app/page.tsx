@@ -13,6 +13,7 @@ import SkillProficiencyBadge from "../components/SkillProficiencyBadge";
 import SkillsToLearn from "../components/SkillsToLearn";
 import TechIcon from "../components/TechIcon";
 import IssueCard from "../components/IssueCard";
+import JobOpportunitiesList from "../components/JobOpportunitiesList";
 import { hiddenIssueId, useHiddenIssues } from "../hooks/useHiddenIssues";
 import { getMockRecommendedIssues } from "../data/mockIssues";
 import {
@@ -151,7 +152,9 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showHidden, setShowHidden] = useState(false);
   const { hiddenIds, isHidden, hideIssue, restoreIssue } = useHiddenIssues();
-  const hiddenCount = recommendations.filter((issue) => hiddenIds.includes(hiddenIssueId(issue))).length;
+  const hiddenCount = recommendations.filter((issue) =>
+    hiddenIds.includes(hiddenIssueId(issue))
+  ).length;
 
   const [error, setError] = useState("");
   const [serviceError, setServiceError] = useState<ServiceErrorDetails | null>(null);
@@ -1000,7 +1003,8 @@ export default function Home() {
                             theme === "dark" ? "text-gray-400" : "text-gray-600"
                           }`}
                         >
-                          Showing {filteredRecommendations.length} of {recommendations.length} issues
+                          Showing {filteredRecommendations.length} of {recommendations.length}{" "}
+                          issues
                         </span>
                         {hiddenCount > 0 && (
                           <button
@@ -1251,6 +1255,15 @@ export default function Home() {
                     </div>
                   )}
                 </div>
+
+                {/* Student Job & Internship Matches */}
+                <JobOpportunitiesList studentSkills={skills?.skills || []} theme={theme} />
+
+                {/* Student Job & Internship Matches */}
+                <JobOpportunitiesList
+                  studentSkills={skills?.skills || []}
+                  theme={theme}
+                />
               </div>
             </section>
           )}
