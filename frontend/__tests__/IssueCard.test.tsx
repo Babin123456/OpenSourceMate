@@ -2,8 +2,19 @@ import React from "react";
 import { render, screen } from "@testing-library/react";
 import IssueCard from "../components/IssueCard";
 import type { IssueRecommendation } from "../types/api";
+import { setCachedResponsiveness, determineResponsiveness } from "../utils/repoResponsiveness";
 
 describe("IssueCard Component", () => {
+  beforeAll(() => {
+    setCachedResponsiveness(
+      "octocat/hello-world",
+      determineResponsiveness({
+        repository: "octocat/hello-world",
+        medianResponseHours: 12.0,
+        sampleCount: 5,
+      })
+    );
+  });
   const sampleIssue: IssueRecommendation = {
     id: 42,
     title: "Implement automatic retry for network errors in API client",

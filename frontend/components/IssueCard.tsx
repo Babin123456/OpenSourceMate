@@ -3,6 +3,7 @@
 import React from "react";
 import type { IssueRecommendation } from "../types/api";
 import { inferIssueDifficulty, type IssueDifficulty } from "../data/mockIssues";
+import ResponsivenessBadge from "./ResponsivenessBadge";
 
 export interface IssueCardProps {
   issue: IssueRecommendation;
@@ -90,6 +91,9 @@ export default function IssueCard({
             <span className={`font-semibold ${isDark ? "text-purple-400" : "text-purple-600"}`}>
               {issue.repository}
             </span>
+
+            {/* Responsiveness Signal Label */}
+            <ResponsivenessBadge repository={issue.repository} theme={theme} />
 
             {/* Language */}
             {issue.language && (
