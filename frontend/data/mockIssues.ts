@@ -107,10 +107,7 @@ export const MOCK_RECOMMENDED_ISSUES: IssueRecommendation[] = [
     updated_at: "2026-10-30T09:10:00Z",
     language: "JavaScript",
     match_score: 85,
-    match_reasons: [
-      "Matched skill: React and JavaScript",
-      "Performance optimization focus",
-    ],
+    match_reasons: ["Matched skill: React and JavaScript", "Performance optimization focus"],
     explanation:
       "Deep dive into React DOM reconciliation and SVG layout recalculation under heavy rendering workloads.",
     difficulty: "Advanced",
@@ -128,12 +125,8 @@ export const MOCK_RECOMMENDED_ISSUES: IssueRecommendation[] = [
     updated_at: "2026-10-27T17:00:00Z",
     language: "Go",
     match_score: 91,
-    match_reasons: [
-      "Matched primary skill: Go",
-      "Network systems programming alignment",
-    ],
-    explanation:
-      "Requires familiarity with Go's net package and sync.Pool memory reuse patterns.",
+    match_reasons: ["Matched primary skill: Go", "Network systems programming alignment"],
+    explanation: "Requires familiarity with Go's net package and sync.Pool memory reuse patterns.",
     difficulty: "Advanced",
     is_mock: true,
   },
@@ -149,10 +142,7 @@ export const MOCK_RECOMMENDED_ISSUES: IssueRecommendation[] = [
     updated_at: "2026-10-31T15:00:00Z",
     language: "Rust",
     match_score: 88,
-    match_reasons: [
-      "Matched skill: Rust",
-      "Beginner-friendly issue labeled good first issue",
-    ],
+    match_reasons: ["Matched skill: Rust", "Beginner-friendly issue labeled good first issue"],
     explanation:
       "Straightforward Rust enhancement updating clap CLI error reporting and user guide documentation.",
     difficulty: "Beginner",
@@ -170,10 +160,7 @@ export const MOCK_RECOMMENDED_ISSUES: IssueRecommendation[] = [
     updated_at: "2026-10-29T18:40:00Z",
     language: "TypeScript",
     match_score: 82,
-    match_reasons: [
-      "Matched skill: TypeScript and CSS",
-      "Utility library expansion",
-    ],
+    match_reasons: ["Matched skill: TypeScript and CSS", "Utility library expansion"],
     explanation:
       "Builds on Tailwind compiler internals to format dynamic unit values across international locales.",
     difficulty: "Intermediate",
@@ -181,15 +168,33 @@ export const MOCK_RECOMMENDED_ISSUES: IssueRecommendation[] = [
   },
 ];
 
+export interface MockIssuesOptions {
+  learningMode?: boolean;
+  targetSkills?: string[];
+  filterBySkills?: boolean;
+}
+
 /**
  * Returns mock recommended issues filtered or prioritized by user skills.
  * Falls back to the full mock set if no skills match.
+ *
+ * When options.filterBySkills is true, issues not matching any of the user's
+ * active skills are removed from the results.
  */
 export function getMockRecommendedIssues(
-  skills?: string[] | SkillItem[] | null
+  skills?: string[] | SkillItem[] | null,
+  options?: MockIssuesOptions
 ): IssueRecommendation[] {
+  if (options?.filterBySkills && (!skills || skills.length === 0)) {
+    return [];
+  }
+
   if (!skills || skills.length === 0) {
-    return MOCK_RECOMMENDED_ISSUES;
+    return MOCK_RECOMMENDED_ISSUES.map((issue) => ({
+      ...issue,
+      difficulty: issue.difficulty || inferIssueDifficulty(issue.labels),
+      is_mock: true,
+    }));
   }
 
   // Extract skill names in lowercase
@@ -197,8 +202,19 @@ export function getMockRecommendedIssues(
     skills.map((s) => (typeof s === "string" ? s.toLowerCase() : s.name.toLowerCase()))
   );
 
+  const baseIssues = options?.filterBySkills
+    ? MOCK_RECOMMENDED_ISSUES.filter((issue) => {
+        const langMatch = issue.language && userSkillNames.has(issue.language.toLowerCase());
+        const labelMatch = issue.labels?.some((lbl) => userSkillNames.has(lbl.toLowerCase()));
+        const titleMatch = Array.from(userSkillNames).some((s) =>
+          issue.title.toLowerCase().includes(s)
+        );
+        return langMatch || labelMatch || titleMatch;
+      })
+    : MOCK_RECOMMENDED_ISSUES;
+
   // Score mock issues based on user's skills
-  const scored = MOCK_RECOMMENDED_ISSUES.map((issue) => {
+  const scored = baseIssues.map((issue) => {
     const langMatch = issue.language && userSkillNames.has(issue.language.toLowerCase());
     const labelMatch = issue.labels?.some((lbl) => userSkillNames.has(lbl.toLowerCase()));
 
