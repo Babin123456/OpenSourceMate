@@ -127,6 +127,21 @@ export default function IssueCard({
               {difficulty}
             </span>
 
+            {/* Learning Mode Badge */}
+            {issue.is_learning_mode && (
+              <span
+                data-testid="learning-mode-badge"
+                className={`rounded-md border px-2 py-0.5 text-[11px] font-semibold tracking-wide ${
+                  isDark
+                    ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
+                    : "border-emerald-300 bg-emerald-50 text-emerald-800"
+                }`}
+                title={`Picked for target learning skill: ${issue.learning_skill || issue.language || "Skill"}`}
+              >
+                🌱 Learning: {issue.learning_skill || issue.language || "Target Skill"}
+              </span>
+            )}
+
             {/* Demo / Coming Soon indicator */}
             {showMockBadge && (
               <span
@@ -180,15 +195,28 @@ export default function IssueCard({
           {/* Explanation if present */}
           {issue.explanation && (
             <div
+              data-testid="issue-explanation"
               className={`mt-4 rounded-xl border p-3.5 text-xs ${
-                isDark
-                  ? "border-purple-500/20 bg-purple-500/5 text-gray-200"
-                  : "border-purple-200 bg-purple-50 text-gray-800"
+                issue.is_learning_mode
+                  ? isDark
+                    ? "border-emerald-500/30 bg-emerald-500/5 text-gray-200"
+                    : "border-emerald-300 bg-emerald-50/70 text-gray-800"
+                  : isDark
+                    ? "border-purple-500/20 bg-purple-500/5 text-gray-200"
+                    : "border-purple-200 bg-purple-50 text-gray-800"
               }`}
             >
-              <div className="flex items-center gap-1.5 font-semibold text-purple-400">
-                <span aria-hidden="true">✦</span>
-                <span>Why this is recommended for you</span>
+              <div
+                className={`flex items-center gap-1.5 font-semibold ${
+                  issue.is_learning_mode ? "text-emerald-400" : "text-purple-400"
+                }`}
+              >
+                <span aria-hidden="true">{issue.is_learning_mode ? "🌱" : "✦"}</span>
+                <span>
+                  {issue.is_learning_mode
+                    ? "Why this is recommended for you (Learning Mode)"
+                    : "Why this is recommended for you"}
+                </span>
                 {issue.is_ai_generated && (
                   <span
                     className={`ml-1.5 rounded-full px-1.5 py-0.2 text-[9px] uppercase tracking-wider font-bold ${

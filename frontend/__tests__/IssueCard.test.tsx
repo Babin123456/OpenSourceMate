@@ -123,12 +123,24 @@ describe("IssueCard Component", () => {
     expect(link).toHaveAttribute("rel", "noopener noreferrer");
   });
 
-  it("displays repository responsiveness signal badge with tooltip", () => {
-    render(<IssueCard issue={sampleIssue} theme="dark" />);
+  it("renders Learning Mode badge and tailored explanation for learning issues", () => {
+    const learningIssue: IssueRecommendation = {
+      ...sampleIssue,
+      is_learning_mode: true,
+      learning_skill: "Rust",
+      explanation:
+        "Picked for Learning Mode: beginner-friendly starter issue to help you learn and grow into Rust.",
+    };
 
-    const respBadge = screen.getByTestId("responsiveness-badge");
-    expect(respBadge).toBeInTheDocument();
-    expect(respBadge).toHaveAttribute("title");
-    expect(respBadge.getAttribute("title")).toMatch(/Fast|Moderate|Slow|Not enough data/);
+    render(<IssueCard issue={learningIssue} theme="dark" />);
+
+    const learningBadge = screen.getByTestId("learning-mode-badge");
+    expect(learningBadge).toBeInTheDocument();
+    expect(learningBadge).toHaveTextContent("Learning: Rust");
+
+    expect(screen.getByText("Why this is recommended for you (Learning Mode)")).toBeInTheDocument();
+    expect(
+      screen.getByText(/beginner-friendly starter issue to help you learn and grow into Rust/i)
+    ).toBeInTheDocument();
   });
 });
