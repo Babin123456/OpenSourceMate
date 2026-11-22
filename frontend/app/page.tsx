@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import ExportMenu from "../components/ExportMenu";
 import GitHubLink from "../components/GitHubLink";
 import ProfileCard from "../components/ProfileCard";
@@ -12,7 +12,9 @@ import SkillChart from "../components/SkillChart";
 import SkillProficiencyBadge from "../components/SkillProficiencyBadge";
 import SkillsToLearn from "../components/SkillsToLearn";
 import TechIcon from "../components/TechIcon";
+import SkillsEditor from "../components/SkillsEditor";
 import IssueCard from "../components/IssueCard";
+import JobOpportunitiesList from "../components/JobOpportunitiesList";
 import { hiddenIssueId, useHiddenIssues } from "../hooks/useHiddenIssues";
 import { getMockRecommendedIssues } from "../data/mockIssues";
 import { rankIssuesForLearningMode, COMMON_TARGET_SKILLS } from "../utils/learningMode";
@@ -35,7 +37,6 @@ import {
   isNetworkOrServerError,
   resolveServiceErrorDetails,
   sanitizeErrorMessage,
-  type ServiceErrorDetails,
 } from "../utils/errorHandling";
 import { exportAnalysisData, type ExportFormat, type ExportPayload } from "../utils/exportAnalysis";
 import {
@@ -45,6 +46,11 @@ import {
   clearRecentSearches,
 } from "../utils/recentSearches";
 import { validateGitHubUsername, resolveAnalyzerErrorMessage } from "../utils/validation";
+import {
+  analyzerReducer,
+  initialAnalyzerState,
+  type AnalyzerData,
+} from "../utils/analyzerState";
 import BuildVersionBadge from "../components/BuildVersionBadge";
 import ContributorsWall from "../components/ContributorsWall";
 export default function Home() {
@@ -136,11 +142,24 @@ export default function Home() {
   const openedFromLink = useRef(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [username, setUsername] = useState("");
-  const [loading, setLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [skills, setSkills] = useState<SkillsData | null>(null);
+  const [analyzerState, dispatchAnalyzer] = useReducer(analyzerReducer, initialAnalyzerState);
+  const requestIdRef = useRef(0);
+  const analysisData = analyzerState.status === "idle" ? undefined : analyzerState.data;
+  const profile: Profile | null = analysisData?.profile ?? null;
+  const skills: SkillsData | null = analysisData?.skills ?? null;
+  const loading = analyzerState.status === "loading";
+  const error =
+    analyzerState.status === "error" || analyzerState.status === "rate-limited"
+      ? analyzerState.message
+      : "";
+  const serviceError = analyzerState.status === "error" ? analyzerState.serviceError : undefined;
+  const lastAnalyzed = analyzerState.status === "idle" ? "" : analyzerState.username;
+  const canRetry =
+    analyzerState.status === "error" || analyzerState.status === "rate-limited"
+      ? analyzerState.canRetry
+      : false;
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [loadingMatching, setLoadingMatching] = useState(false);
   const [matchingError, setMatchingError] = useState("");
@@ -161,10 +180,6 @@ export default function Home() {
     hiddenIds.includes(hiddenIssueId(issue))
   ).length;
 
-  const [error, setError] = useState("");
-  const [serviceError, setServiceError] = useState<ServiceErrorDetails | null>(null);
-  const [lastAnalyzed, setLastAnalyzed] = useState("");
-  const [canRetry, setCanRetry] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
   useEffect(() => {
@@ -196,26 +211,82 @@ export default function Home() {
     };
   }, []);
 
-  const fetchMatchedIssues = async (targetUsername: string, signal?: AbortSignal) => {
+  // Custom skills state
+  const [customSkills, setCustomSkills] = useState<string[] | null>(null);
+
+  const detectedSkills = useMemo(() => {
+    return skills?.skills.map((s) => s.name) || [];
+  }, [skills]);
+
+  const activeSkills = useMemo(() => {
+    return customSkills !== null ? customSkills : detectedSkills;
+  }, [customSkills, detectedSkills]);
+
+  const isSkillsEdited = customSkills !== null;
+
+  const handleSkillsChange = (newSkills: string[]) => {
+    setCustomSkills(newSkills);
+    const target = profile?.username || username;
+    if (target) {
+      fetchMatchedIssues(target, undefined, newSkills);
+    }
+  };
+
+  const handleResetSkills = () => {
+    setCustomSkills(null);
+    const target = profile?.username || username;
+    if (target) {
+      fetchMatchedIssues(target, undefined, detectedSkills);
+    }
+  };
+
+  const fetchMatchedIssues = async (
+    targetUsername: string,
+    signal?: AbortSignal,
+    overrideSkills?: string[]
+  ) => {
     setLoadingMatching(true);
     setMatchingError("");
     setIsDemoData(false);
 
+    const skillsToUse =
+      overrideSkills !== undefined
+        ? overrideSkills
+        : customSkills !== null
+          ? customSkills
+          : skills?.skills.map((s) => s.name);
+
     try {
-      const matchData = await apiFetchMatchedIssues(targetUsername, { signal });
+      const matchData = await apiFetchMatchedIssues(targetUsername, {
+        signal,
+        skills: skillsToUse,
+      });
       if (matchData.recommendations && matchData.recommendations.length > 0) {
         setRecommendations(matchData.recommendations);
         setIsDemoData(false);
+      } else if (skillsToUse && skillsToUse.length === 0) {
+        // User explicitly removed all skills
+        setRecommendations([]);
+        setIsDemoData(false);
       } else {
-        const fallback = getMockRecommendedIssues(skills?.skills);
+        const fallback = getMockRecommendedIssues(skillsToUse, {
+          filterBySkills: customSkills !== null || overrideSkills !== undefined,
+        });
         setRecommendations(fallback);
         setIsDemoData(true);
       }
     } catch (err: unknown) {
       if (isAbortError(err)) return;
-      const fallback = getMockRecommendedIssues(skills?.skills);
-      setRecommendations(fallback);
-      setIsDemoData(true);
+      if (skillsToUse && skillsToUse.length === 0) {
+        setRecommendations([]);
+        setIsDemoData(false);
+      } else {
+        const fallback = getMockRecommendedIssues(skillsToUse, {
+          filterBySkills: customSkills !== null || overrideSkills !== undefined,
+        });
+        setRecommendations(fallback);
+        setIsDemoData(true);
+      }
     } finally {
       setLoadingMatching(false);
     }
@@ -324,8 +395,10 @@ export default function Home() {
     const validation = validateGitHubUsername(raw);
 
     if (!validation.isValid) {
-      setServiceError(null);
-      setError(validation.error || "Please enter a valid GitHub username.");
+      dispatchAnalyzer({
+        type: "validation-error",
+        message: validation.error || "Please enter a valid GitHub username.",
+      });
       return;
     }
 
@@ -334,17 +407,24 @@ export default function Home() {
     if (loading) return;
 
     setUsername(cleanUsername);
-    setLastAnalyzed(cleanUsername);
-    setCanRetry(false);
-    setLoading(true);
-    setError("");
-    setServiceError(null);
+    const requestId = ++requestIdRef.current;
+    const previousData =
+      profile?.username.toLowerCase() === cleanUsername.toLowerCase() && skills
+        ? ({ profile, skills } satisfies AnalyzerData)
+        : undefined;
+    dispatchAnalyzer({
+      type: "submit",
+      requestId,
+      username: cleanUsername,
+      data: previousData,
+    });
 
     // Only clear previous analysis if analyzing a different username
-    if (cleanUsername.toLowerCase() !== profile?.username?.toLowerCase()) {
-      setProfile(null);
-      setSkills(null);
+    if (!previousData) {
       setRecommendations([]);
+      setCustomSkills(null);
+    } else {
+      setCustomSkills(null);
     }
 
     const searchSignal = createSearchSignal();
@@ -353,8 +433,11 @@ export default function Home() {
       const profileData = await fetchUserProfile(cleanUsername, { signal: searchSignal });
       const skillsData = await fetchUserSkills(cleanUsername, { signal: searchSignal });
 
-      setProfile(profileData);
-      setSkills(skillsData);
+      dispatchAnalyzer({
+        type: "success",
+        requestId,
+        data: { profile: profileData, skills: skillsData },
+      });
 
       // Save to recent searches on successful analysis
       const updatedSearches = saveRecentSearch(cleanUsername);
@@ -365,32 +448,49 @@ export default function Home() {
       if (isAbortError(err)) {
         return; // Prior in-flight search was aborted by a new search
       }
-      setCanRetry(true);
-
       // Detect network failure or 5xx server-side response (Issue #128)
       if (isNetworkOrServerError(err)) {
         const details = resolveServiceErrorDetails(err, {
           username: cleanUsername,
           endpoint: `/api/github/users/${cleanUsername}`,
         });
-        setServiceError(details);
-        setError(details.message);
+        dispatchAnalyzer({
+          type: "error",
+          requestId,
+          message: details.message,
+          canRetry: true,
+          serviceError: details,
+        });
         return;
       }
 
       if (err instanceof ApiClientError) {
         if (err.status === 404) {
-          setError(resolveAnalyzerErrorMessage(404, { username: cleanUsername }));
+          dispatchAnalyzer({
+            type: "error",
+            requestId,
+            message: resolveAnalyzerErrorMessage(404, { username: cleanUsername }),
+            canRetry: true,
+          });
           return;
         }
         if (err.status === 429) {
-          setError(resolveAnalyzerErrorMessage(429, { resetAt: err.resetAt }));
+          dispatchAnalyzer({
+            type: "rate-limited",
+            requestId,
+            message: resolveAnalyzerErrorMessage(429, { resetAt: err.resetAt }),
+            resetAt: err.resetAt,
+            canRetry: true,
+          });
           return;
         }
       }
-      setError(sanitizeErrorMessage(resolveAnalyzerErrorMessage(err)));
-    } finally {
-      setLoading(false);
+      dispatchAnalyzer({
+        type: "error",
+        requestId,
+        message: sanitizeErrorMessage(resolveAnalyzerErrorMessage(err)),
+        canRetry: true,
+      });
     }
   };
 
@@ -427,13 +527,26 @@ export default function Home() {
         fetchUserProfile(profile.username, { signal: searchSignal, refresh: true }),
         fetchUserSkills(profile.username, { signal: searchSignal, refresh: true }),
       ]);
-      setProfile(profileData);
-      setSkills(skillsData);
+      if (analyzerState.status !== "idle") {
+        dispatchAnalyzer({
+          type: "success",
+          requestId: analyzerState.requestId,
+          data: { profile: profileData, skills: skillsData },
+        });
+      }
       fetchMatchedIssues(profile.username, searchSignal);
     } catch (err: unknown) {
       if (isAbortError(err)) return;
       if (err instanceof ApiClientError && err.status === 429) {
-        setError(resolveAnalyzerErrorMessage(429, { resetAt: err.resetAt }));
+        if (analyzerState.status !== "idle") {
+          dispatchAnalyzer({
+            type: "rate-limited",
+            requestId: analyzerState.requestId,
+            message: resolveAnalyzerErrorMessage(429, { resetAt: err.resetAt }),
+            resetAt: err.resetAt,
+            canRetry: true,
+          });
+        }
       }
     } finally {
       setIsRefreshing(false);
@@ -722,8 +835,12 @@ export default function Home() {
                       value={username}
                       onChange={(e) => {
                         setUsername(e.target.value);
-                        if (error) setError("");
-                        if (serviceError) setServiceError(null);
+                        if (
+                          analyzerState.status === "error" ||
+                          analyzerState.status === "rate-limited"
+                        ) {
+                          dispatchAnalyzer({ type: "clear-error" });
+                        }
                       }}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && !loading) {
@@ -807,7 +924,7 @@ export default function Home() {
                     message={serviceError.message}
                     statusCode={serviceError.statusCode}
                     onRetry={() => analyzeProfile(lastAnalyzed || username)}
-                    onDismiss={() => setServiceError(null)}
+                    onDismiss={() => dispatchAnalyzer({ type: "clear-service-error" })}
                     reportUrl={serviceError.reportUrl}
                     theme={theme}
                     isRetrying={loading}
@@ -954,33 +1071,54 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {skills.skills.length === 0 ? (
+                    {/* Custom Skills Manager with Removable Chips, Add Skill, and Reset */}
+                    <SkillsEditor
+                      initialSkills={detectedSkills}
+                      currentSkills={activeSkills}
+                      onSkillsChange={handleSkillsChange}
+                      onReset={handleResetSkills}
+                      isEdited={isSkillsEdited}
+                      theme={theme}
+                      className="mt-6"
+                    />
+
+                    {activeSkills.length === 0 ? (
                       <div
-                        className={`mt-8 rounded-2xl border border-dashed p-8 text-center ${
+                        data-testid="no-skills-empty-state"
+                        className={`mt-6 rounded-2xl border border-dashed p-8 text-center ${
                           theme === "dark" ? "border-white/10" : "border-gray-300"
                         }`}
                       >
                         <p className={theme === "dark" ? "text-gray-300" : "text-gray-600"}>
-                          No public repositories with a language were found for this profile, so
-                          there are no skills to show yet.
+                          All skills have been removed. Add skills above to see matching issues.
                         </p>
                       </div>
                     ) : (
                       <>
                         <SkillChart
-                          skills={skills.skills}
+                          skills={skills.skills.filter((s) =>
+                            activeSkills.some((as) => as.toLowerCase() === s.name.toLowerCase())
+                          )}
                           totalRepositories={skills.total_repositories_analyzed}
                           theme={theme}
                           className="mt-8"
                         />
 
                         <div className="mt-8 grid gap-4 sm:grid-cols-2 sm:gap-5">
-                          {skills.skills.map((skill) => (
-                            <SkillCard key={skill.name} skill={skill} theme={theme} />
-                          ))}
+                          {activeSkills.map((skillName) => {
+                            const detectedSkill = skills.skills.find(
+                              (s) => s.name.toLowerCase() === skillName.toLowerCase()
+                            );
+                            const cardSkill: Skill = detectedSkill || {
+                              name: skillName,
+                              repository_count: 1,
+                              percentage: 100,
+                            };
+                            return <SkillCard key={skillName} skill={cardSkill} theme={theme} />;
+                          })}
                         </div>
 
-                        <SkillsToLearn skills={skills.skills} theme={theme} className="mt-8" />
+                        <SkillsToLearn skills={activeSkills} theme={theme} className="mt-8" />
                       </>
                     )}
                   </div>
@@ -1396,6 +1534,15 @@ export default function Home() {
                     </div>
                   )}
                 </div>
+
+                {/* Student Job & Internship Matches */}
+                <JobOpportunitiesList studentSkills={skills?.skills || []} theme={theme} />
+
+                {/* Student Job & Internship Matches */}
+                <JobOpportunitiesList
+                  studentSkills={skills?.skills || []}
+                  theme={theme}
+                />
               </div>
             </section>
           )}
